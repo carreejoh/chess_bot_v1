@@ -1,16 +1,31 @@
 import { useEffect, useState } from "react"
 import { initialWhitePieces, initialBlackPieces } from "./chessLocations";
-import { whereCanThatPieceMove, movePiece } from "./chessLogic";
+import { whereCanThatPieceMove, movePiece, whatCanAllPiecesSee } from "./chessLogic";
 import { variableNamesToURLPath } from "./referenceObjects";
+import { calculateAnimations } from "./calculateAnimations";
 
 import Controls from "./secondary/controls";
 import CapturedPieces from "./secondary/capturedPieces";
 
 function Board() {
 
+    // TODO
+    // Can't put yourself in check (walking king, or moving piece)
+    // Have to move out of check
+    // Checkmates
+    // Castle
+    // En Passant
+    // What does white/black "see"
+
+    // This tracks the location of the white and black pieces
     const [whitePieces, setWhitePieces] = useState(initialWhitePieces)
     const [blackPieces, setBlackPieces] = useState(initialBlackPieces)
+    // This is whos turn it is
     const [whitesTurn, setWhitesTurn] = useState(true)
+
+    const [whatWhiteSees, setWhatWhiteSees] = useState([])
+
+    console.log(whatWhiteSees)
 
     // This logic builds the board 
     const allBoardSquares = [];
@@ -63,10 +78,6 @@ function Board() {
         }
     }
 
-    useEffect(() => {
-        console.log(blackPieces)
-    }, [blackPieces])
-
     // 
     // This searches each object by key, and finds what the piece variable name is
     // 
@@ -84,12 +95,11 @@ function Board() {
 
     function clickPartOfTheBoard(tile, matchingPieceWhite, matchingPieceBlack) {
 
-        // setLastClickedSquare(tile)
         const whitePiecePositions = Object.values(whitePieces);
         const blackPiecePositions = Object.values(blackPieces);
 
         let locations = []
-        
+
         if (whitesTurn) {
             if (matchingPieceWhite) {
                 locations = whereCanThatPieceMove(tile, matchingPieceWhite, whitePieces, blackPieces)
@@ -98,7 +108,6 @@ function Board() {
 
             // Random clicks
             if (!whitePiecePositions.includes(lastClickedSquare) && !whitePiecePositions.includes(tile)) {
-                console.log("nothing to nothing")
                 setLegalMovesForSelectedPiece([])
             }
 
@@ -106,12 +115,16 @@ function Board() {
             if (whitePiecePositions.includes(lastClickedSquare) && !whitePiecePositions.includes(tile)) {
                 let validMove = movePiece(lastClickedSquare, tile, whitePieces, blackPieces, whitePieces)
                 if (validMove) {
+
+                    let anyChecks = whatCanAllPiecesSee(whitePieces, blackPieces, validMove, tile)
+                    setWhatWhiteSees(anyChecks)
+                    
                     changePieceLocation(validMove, tile)
 
                     // This represents a capture
+                    // Animate capture
                     if (blackPiecePositions.includes(tile)) {
                         const blackPiece = getPiecenameByLocation(tile, blackPieces)
-                        console.log(blackPiece)
                         handleCapture(blackPiece, "black")
                     }
                 }
@@ -127,7 +140,6 @@ function Board() {
 
             // Random clicks
             if (!blackPiecePositions.includes(lastClickedSquare) && !blackPiecePositions.includes(tile)) {
-                console.log("nothing to nothing")
                 setLegalMovesForSelectedPiece([])
             }
 
@@ -139,15 +151,14 @@ function Board() {
 
                     // This represents a capture
                     if (whitePiecePositions.includes(tile)) {
-                        const blackPiece = getPiecenameByLocation(tile, whitePieces)
-                        handleCapture(blackPiece, "white")
+                        const whitePiece = getPiecenameByLocation(tile, whitePieces)
+                        handleCapture(whitePiece, "white")
                     }
                 }
             }
         }
 
         setLastClickedSquare(tile)
-
     }
 
     return (
@@ -177,13 +188,16 @@ function Board() {
                     const matchingPieceWhite = Object.entries(whitePieces).find(([key, value]) => value === tile);
                     const matchingPieceBlack = Object.entries(blackPieces).find(([key, value]) => value === tile);
 
+                    // ${lastClickedSquare === tile && "selectedSquare"} 
                     return (
                         <div
                             key={tile}
                             className={`col-span-1 row-span-1 cursor-pointer
-                        ${isBlack ? "bg-[#B98763]" : "bg-[#ECD6B1]"} 
-                        ${lastClickedSquare === tile && "selectedSquare"} 
-                        ${legalMovesForSelectedPiece.includes(tile) && "selectedSquare"}`
+                                ${isBlack ? "bg-[#B98763]" : "bg-[#ECD6B1]"}
+                                ${legalMovesForSelectedPiece.includes(tile) && "selectedSquare"} 
+                                ${lastClickedSquare === tile && whitesTurn && matchingPieceWhite && "selectedSquare"}
+                                ${lastClickedSquare === tile && !whitesTurn && matchingPieceBlack && "selectedSquare"}
+                                ${whatWhiteSees.includes(tile) && "whatWhiteSees"}`
                             }
 
                             // When part of the board is clicked, find out if that square has a piece on it
@@ -199,12 +213,15 @@ function Board() {
                             <div className="fixed mt-[70px] text-xs text-gray-700">
                                 {tile}
                             </div>
-                            <div className="w-full h-full p-1">
+                            <div className="w-full h-full p-1 relative">
                                 {matchingPieceWhite && (
-                                    <img alt="chess piece" className="w-full h-full" src={`/${variableNamesToURLPath[matchingPieceWhite[0]]}`} />
+                                    <img alt="chess piece"
+                                        className={`w-full h-full z-50`}
+                                        src={`/${variableNamesToURLPath[matchingPieceWhite[0]]}`}
+                                    />
                                 )}
                                 {matchingPieceBlack && (
-                                    <img alt="chess piece" className="w-full h-full" src={`/${variableNamesToURLPath[matchingPieceBlack[0]]}`} />
+                                    <img alt="chess piece" className="w-full h-full z-50" src={`/${variableNamesToURLPath[matchingPieceBlack[0]]}`} />
                                 )}
                             </div>
                         </div>

@@ -5,8 +5,6 @@ function CapturedPieces({
     player
 }) {
 
-    console.log(pieces)
-
     return(
         <div className="h-8 w-[700px]">
             {player === "white" ? (
