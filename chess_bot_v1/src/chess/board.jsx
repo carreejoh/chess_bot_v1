@@ -89,17 +89,13 @@ function Board() {
         const blackPiecePositions = Object.values(blackPieces);
 
         let locations = []
-
-        if (matchingPieceWhite) {
-            locations = whereCanThatPieceMove(tile, matchingPieceWhite, whitePieces, blackPieces)
-        }
-        if (matchingPieceBlack) {
-            locations = whereCanThatPieceMove(tile, matchingPieceBlack, whitePieces, blackPieces)
-        }
-
-        setLegalMovesForSelectedPiece(locations)
-
+        
         if (whitesTurn) {
+            if (matchingPieceWhite) {
+                locations = whereCanThatPieceMove(tile, matchingPieceWhite, whitePieces, blackPieces)
+            }
+            setLegalMovesForSelectedPiece(locations)
+
             // Random clicks
             if (!whitePiecePositions.includes(lastClickedSquare) && !whitePiecePositions.includes(tile)) {
                 console.log("nothing to nothing")
@@ -124,6 +120,11 @@ function Board() {
         }
 
         if (!whitesTurn) {
+            if (matchingPieceBlack) {
+                locations = whereCanThatPieceMove(tile, matchingPieceBlack, whitePieces, blackPieces)
+            }
+            setLegalMovesForSelectedPiece(locations)
+
             // Random clicks
             if (!blackPiecePositions.includes(lastClickedSquare) && !blackPiecePositions.includes(tile)) {
                 console.log("nothing to nothing")
