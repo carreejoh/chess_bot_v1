@@ -7,7 +7,7 @@ import {
     kingMoves,
 } from "./legalMoves";
 
-import { pawnMoves } from "./legalMoves/pawnMoves";
+import { pawnMoves, whatCanPawnsAttack } from "./legalMoves/pawnMoves";
 
 //
 // Return an array of locations where this piece can legally move.
@@ -81,57 +81,202 @@ export const movePiece = (
 };
 
 //
-// Ensure that a player can't put their own king in check,
-// Check to see if a player has put the opponents king in check,
-// Return all piece locations for a cool visual that can be toggled
+// What can each piece attack? This calculates what each piece can attack
 //
 
 export const whatCanAllPiecesSee = (
     whitePieces,
     blackPieces,
-    piece,
-    proposedMove
 ) => {
-    const whitePieceNames = Object.keys(whitePieces);
-    const blackPieceNames = Object.keys(blackPieces);
+    
+    let allWhiteMoves = []
+    let allBlackMoves = []
 
-    let tempWhite = [];
-    let tempWhitePawns = [];
-    let tempBlack = [];
-    let tempBlackPawns = [];
+    let tempWhite = {}
+    let tempWhitePawns = {}
+    let tempBlack = {}
+    let tempBlackPawns = {}
 
     // Loop through white and black pieces and seperate them into pawns/everything else
 
     Object.entries(whitePieces).forEach(([key, value]) => {
         if (key.toLowerCase().includes("pawn")) {
-            tempWhitePawns.push({ [key]: value });
+            tempWhitePawns[key] = value
         } else {
-            tempWhite.push({ [key]: value });
+            tempWhite[key] = value
         }
     });
 
     Object.entries(blackPieces).forEach(([key, value]) => {
         if (key.toLowerCase().includes("pawn")) {
-            tempBlackPawns.push({ [key]: value });
+            tempBlackPawns[key] = value
         } else {
-            tempBlack.push({ [key]: value });
+            tempBlack[key] = value
         }
     });
 
-    
+    // Combine the seperated objects for all piece locations including proposed move
 
-    let allWhiteMoves = Object.entries(tempWhite).reduce((acc, [key, value]) => {
-        const moves = whereCanThatPieceMove(value, key, tempWhite, tempBlack);
+    const combinedWhite = { ...tempWhite, ...tempWhitePawns }
+    const combinedBlack = { ...tempBlack, ...tempBlackPawns }
+
+    // Calculate what all white/black pieces can see (capture) not including pawns,
+    // with the proposed move
+
+    let whatWhiteMajorsSee = Object.entries(tempWhite).reduce((acc, [key, value]) => {
+        const moves = whereCanThatPieceMove(value, key, combinedWhite, combinedBlack);
         return [...acc, ...moves];
     }, []);
 
+    let whatBlackMajorsSee = Object.entries(tempBlack).reduce((acc, [key, value]) => {
+        const moves = whereCanThatPieceMove(value, key, combinedWhite, combinedBlack);
+        return [...acc, ...moves];
+    }, []);
+
+    // Calculate what all white/black pawns can see (capture)
+
+    let whatCanWhitePawnsSee = Object.entries(tempWhitePawns).reduce((acc, [key, value]) => {
+        const moves = whatCanPawnsAttack(value, combinedWhite, combinedBlack);
+        return [...acc, ...moves];
+    }, []);
+
+    let whatCanBlackPawnsSee = Object.entries(tempBlackPawns).reduce((acc, [key, value]) => {
+        const moves = whatCanPawnsAttack(value, combinedWhite, combinedBlack);
+        return [...acc, ...moves];
+    }, []);
+
+    // Combine arrays for each player to see all legal attacking tiles,
+    // Filter out any undefined values
+
+    allWhiteMoves = [...whatWhiteMajorsSee, ...whatCanWhitePawnsSee]
+    allBlackMoves = [...whatBlackMajorsSee, ...whatCanBlackPawnsSee]
+
     allWhiteMoves = [...new Set(allWhiteMoves)].filter(
-        (move) => move.toLowerCase() !== "nnan"
+        (move) => 
+            move.toLowerCase() !== "nnan" && !move.toLowerCase().includes("undefined")
+    );
+    
+    allBlackMoves = [...new Set(allBlackMoves)].filter(
+        (move) => 
+            move.toLowerCase() !== "nnan" && !move.toLowerCase().includes("undefined")
     );
 
-    return allWhiteMoves;
-    console.log(allWhiteMoves);
-    console.log(blackPieces);
-    console.log(piece);
-    console.log(proposedMove);
+    return { allWhiteMoves, allBlackMoves }
+
 };
+
+// Before making a move ensure that the proposed move would not put the player's king in check,
+// If it doesn't put the players king in check, see if it puts the opponents king in check
+
+export const isEitherKingInCheck = (
+    whitePieces, 
+    blackPieces, 
+    piece, 
+    proposedMove,
+    whosTurn,
+    isWhiteKingInCheck,
+    isBlackKingInCheck
+) => {
+
+    let tempWhite = {}
+    let tempWhitePawns = {}
+    let tempBlack = {}
+    let tempBlackPawns = {}
+
+    // Loop through white and black pieces and seperate them into pawns/everything else
+
+    Object.entries(whitePieces).forEach(([key, value]) => {
+        if (key.toLowerCase().includes("pawn")) {
+            tempWhitePawns[key] = value
+        } else {
+            tempWhite[key] = value
+        }
+    });
+
+    Object.entries(blackPieces).forEach(([key, value]) => {
+        if (key.toLowerCase().includes("pawn")) {
+            tempBlackPawns[key] = value
+        } else {
+            tempBlack[key] = value
+        }
+    });
+
+    // Add the new proposed piece move to corresponding object
+
+    switch (true) {
+        case piece.includes("whitePawn"):
+            tempWhitePawns[piece] = proposedMove;
+            break;
+    
+        case piece.includes("white"):
+            tempWhite[piece] = proposedMove;
+            break;
+    
+        case piece.includes("blackPawn"):
+            tempBlackPawns[piece] = proposedMove;
+            break;
+        
+        case piece.includes("black"):
+            tempBlack[piece] = proposedMove;
+            break;
+        default:
+            console.log(`${piece} is not a recognized white piece.`);
+    }
+
+    // Combine the seperated objects for all piece locations including proposed move
+
+    const combinedWhite = { ...tempWhite, ...tempWhitePawns }
+    const combinedBlack = { ...tempBlack, ...tempBlackPawns }
+
+    let whatCanPiecesSeeWithProposedMove = whatCanAllPiecesSee(combinedWhite, combinedBlack)
+
+    let whiteKingLocation = combinedWhite.whiteKing
+    let blackKingLocation = combinedBlack.blackKing
+
+    // True means the king is in check
+    let whiteKingStatus = isWhiteKingInCheck
+    let blackKingStatus = isBlackKingInCheck
+    let legalMove = true
+
+    // Players king is in check, their move does not take the king out of check
+
+    if(whosTurn === "white" && whiteKingStatus && whatCanPiecesSeeWithProposedMove.allBlackMoves.includes(whiteKingLocation)) {
+        legalMove = false
+    }
+    if(whosTurn === "black" && blackKingStatus && whatCanPiecesSeeWithProposedMove.allWhiteMoves.includes(blackKingLocation)) {
+        legalMove = false
+    }
+
+    // Players king is in check, but their move successfully gets the king of out of check
+
+    if(whosTurn === "white" && whiteKingStatus && !whatCanPiecesSeeWithProposedMove.allBlackMoves.includes(whiteKingLocation)) {
+        legalMove = true
+        whiteKingStatus = false
+    }
+    if(whosTurn === "black" && blackKingStatus && !whatCanPiecesSeeWithProposedMove.allWhiteMoves.includes(blackKingLocation)) {
+        legalMove = true
+        blackKingStatus = false
+    }
+
+    // Players king is not in check, but their move will put their king in check
+
+    if(whosTurn === "white" && !whiteKingStatus && whatCanPiecesSeeWithProposedMove.allBlackMoves.includes(whiteKingLocation)) {
+        legalMove = false
+    }
+    if(whosTurn === "black" && !blackKingStatus && whatCanPiecesSeeWithProposedMove.allWhiteMoves.includes(blackKingLocation)) {
+        legalMove = false
+    }
+
+    // Players king is not in check, players move puts their opponents king in check
+
+    if(whosTurn === "white" && !whiteKingStatus && whatCanPiecesSeeWithProposedMove.allWhiteMoves.includes(blackKingLocation)) {
+        legalMove = true
+        blackKingStatus = true
+    }
+    if(whosTurn === "black" && !blackKingStatus && whatCanPiecesSeeWithProposedMove.allBlackMoves.includes(whiteKingLocation)) {
+        legalMove = true
+        whiteKingStatus = true
+    }
+
+    return { legalMove, whiteKingStatus, blackKingStatus }
+}

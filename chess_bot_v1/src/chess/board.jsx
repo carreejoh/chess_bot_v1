@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
 import { initialWhitePieces, initialBlackPieces } from "./chessLocations";
-import { whereCanThatPieceMove, movePiece, whatCanAllPiecesSee } from "./chessLogic";
+import { whereCanThatPieceMove, movePiece, whatCanAllPiecesSee, isEitherKingInCheck } from "./chessLogic";
 import { variableNamesToURLPath } from "./referenceObjects";
 import { calculateAnimations } from "./calculateAnimations";
 
 import Controls from "./secondary/controls";
 import CapturedPieces from "./secondary/capturedPieces";
+import Stats from "./secondary/stats";
 
 function Board() {
 
@@ -22,8 +23,13 @@ function Board() {
     const [blackPieces, setBlackPieces] = useState(initialBlackPieces)
     // This is whos turn it is
     const [whitesTurn, setWhitesTurn] = useState(true)
-
+    // This tracks what each piece from both player can attack
+    // useful for ensuring the king isnt put in check
     const [whatWhiteSees, setWhatWhiteSees] = useState([])
+    const [whatBlackSees, setWhatBlackSees] = useState([])
+    // Track if either king is in check
+    const [isWhiteKingInCheck, setIsWhiteKingInCheck] = useState(false)
+    const [isBlackKingInCheck, setIsBlackKingInCheck] = useState(false)
 
     // This logic builds the board 
     const allBoardSquares = [];
@@ -37,6 +43,14 @@ function Board() {
 
     const [lastClickedSquare, setLastClickedSquare] = useState(null)
     const [legalMovesForSelectedPiece, setLegalMovesForSelectedPiece] = useState([])
+
+    // This is for viewing only!
+    // Visualize what is seen by every piece dependent on player
+    useEffect(() => {
+        let attacks = whatCanAllPiecesSee(whitePieces, blackPieces)
+        setWhatWhiteSees(attacks.allWhiteMoves)
+        setWhatBlackSees(attacks.allBlackMoves)
+    }, [whitePieces, blackPieces])
 
     // 
     // Change the white or black useState holding locations
@@ -113,17 +127,18 @@ function Board() {
             if (whitePiecePositions.includes(lastClickedSquare) && !whitePiecePositions.includes(tile)) {
                 let validMove = movePiece(lastClickedSquare, tile, whitePieces, blackPieces, whitePieces)
                 if (validMove) {
+                    let isKingInCheck = isEitherKingInCheck(whitePieces, blackPieces, validMove, tile, "white", isWhiteKingInCheck, isBlackKingInCheck)
 
-                    let anyChecks = whatCanAllPiecesSee(whitePieces, blackPieces, validMove, tile)
-                    setWhatWhiteSees(anyChecks)
-                    
-                    changePieceLocation(validMove, tile)
+                    setIsWhiteKingInCheck(isKingInCheck.whiteKingStatus)
+                    setIsBlackKingInCheck(isKingInCheck.blackKingStatus)
 
-                    // This represents a capture
-                    // Animate capture
-                    if (blackPiecePositions.includes(tile)) {
-                        const blackPiece = getPiecenameByLocation(tile, blackPieces)
-                        handleCapture(blackPiece, "black")
+                    if(isKingInCheck.legalMove) {
+                        changePieceLocation(validMove, tile)
+                        // This represents a capture
+                        if (blackPiecePositions.includes(tile)) {
+                            const blackPiece = getPiecenameByLocation(tile, blackPieces)
+                            handleCapture(blackPiece, "black")
+                        }
                     }
                 }
             }
@@ -145,12 +160,18 @@ function Board() {
             if (blackPiecePositions.includes(lastClickedSquare) && !blackPiecePositions.includes(tile)) {
                 let validMove = movePiece(lastClickedSquare, tile, whitePieces, blackPieces, blackPieces)
                 if (validMove) {
-                    changePieceLocation(validMove, tile)
+                    let isKingInCheck = isEitherKingInCheck(whitePieces, blackPieces, validMove, tile, "black")
 
-                    // This represents a capture
-                    if (whitePiecePositions.includes(tile)) {
-                        const whitePiece = getPiecenameByLocation(tile, whitePieces)
-                        handleCapture(whitePiece, "white")
+                    setIsWhiteKingInCheck(isKingInCheck.whiteKingStatus)
+                    setIsBlackKingInCheck(isKingInCheck.blackKingStatus)
+
+                    if(isKingInCheck.legalMove) {
+                        changePieceLocation(validMove, tile)
+                        // This represents a capture
+                        if (whitePiecePositions.includes(tile)) {
+                            const whitePiece = getPiecenameByLocation(tile, whitePieces)
+                            handleCapture(whitePiece, "white")
+                        }
                     }
                 }
             }
@@ -160,7 +181,7 @@ function Board() {
     }
 
     return (
-        <div>
+        <div className="flex">
             {/* <div className="flex">
                 <button onClick={() => { setWhitePieces(initialWhitePieces); setBlackPieces(initialBlackPieces) }}>
                     Reset
@@ -174,61 +195,73 @@ function Board() {
                     </div>
                 )}
             </div> */}
-            <CapturedPieces
-                pieces={whitePieces}
-                player={"black"}
-            />
-            <div className="w-[700px] h-[700px] bg-gray-400 grid grid-cols-8 grid-rows-8 border-[4px] border-gray-700">
-                {allBoardSquares.map((tile, index) => {
+            <div>
+                <CapturedPieces
+                    pieces={whitePieces}
+                    player={"black"}
+                />
+                <div className="w-[700px] h-[700px] bg-gray-400 grid grid-cols-8 grid-rows-8 border-[4px] border-gray-700">
+                    {allBoardSquares.map((tile, index) => {
 
-                    // 
-                    const isBlack = Math.floor(index / 8) % 2 === index % 2;
-                    const matchingPieceWhite = Object.entries(whitePieces).find(([key, value]) => value === tile);
-                    const matchingPieceBlack = Object.entries(blackPieces).find(([key, value]) => value === tile);
+                        // 
+                        const isBlack = Math.floor(index / 8) % 2 === index % 2;
+                        const matchingPieceWhite = Object.entries(whitePieces).find(([key, value]) => value === tile);
+                        const matchingPieceBlack = Object.entries(blackPieces).find(([key, value]) => value === tile);
 
-                    // ${lastClickedSquare === tile && "selectedSquare"} 
-                    return (
-                        <div
-                            key={tile}
-                            className={`col-span-1 row-span-1 cursor-pointer
-                                ${isBlack ? "bg-[#B98763]" : "bg-[#ECD6B1]"}
-                                ${legalMovesForSelectedPiece.includes(tile) && "selectedSquare"} 
-                                ${lastClickedSquare === tile && whitesTurn && matchingPieceWhite && "selectedSquare"}
-                                ${lastClickedSquare === tile && !whitesTurn && matchingPieceBlack && "selectedSquare"}
-                               `
-                            }
+                        // ${lastClickedSquare === tile && "selectedSquare"} 
+                        // ${whatWhiteSees.includes(tile) && "selectedSquare"}
+                        return (
+                            <div
+                                key={tile}
+                                className={`col-span-1 row-span-1 cursor-pointer
+                            ${isBlack ? "bg-[#B98763]" : "bg-[#ECD6B1]"}
+                            ${lastClickedSquare === tile && whitesTurn && matchingPieceWhite && "selectedSquare"}
+                            ${lastClickedSquare === tile && !whitesTurn && matchingPieceBlack && "selectedSquare"}
+                            ${whatWhiteSees.includes(tile) && whitesTurn && "selectedSquare"}
+                            ${whatBlackSees.includes(tile) && !whitesTurn && "selectedSquare"}
+                            ${legalMovesForSelectedPiece.includes(tile) && "bg-gray-400"}
+                            ${isWhiteKingInCheck && matchingPieceWhite && matchingPieceWhite[0].includes("King") && "bg-red-400"} 
+                            ${isBlackKingInCheck && matchingPieceBlack && matchingPieceBlack[0].includes("King") && "bg-red-400"} 
+                            `
+                                }
 
-                            // When part of the board is clicked, find out if that square has a piece on it
-                            onClick={() => {
-                                clickPartOfTheBoard(
-                                    tile,
-                                    matchingPieceWhite ? matchingPieceWhite[0] : false,
-                                    matchingPieceBlack ? matchingPieceBlack[0] : false
-                                );
-                            }}
+                                // When part of the board is clicked, find out if that square has a piece on it
+                                onClick={() => {
+                                    clickPartOfTheBoard(
+                                        tile,
+                                        matchingPieceWhite ? matchingPieceWhite[0] : false,
+                                        matchingPieceBlack ? matchingPieceBlack[0] : false
+                                    );
+                                }}
 
-                        >
-                            <div className="fixed mt-[70px] text-xs text-gray-700">
-                                {tile}
+                            >
+                                <div className="fixed mt-[70px] text-xs text-gray-700">
+                                    {tile}
+                                </div>
+                                <div className="w-full h-full p-1 relative">
+                                    {matchingPieceWhite && (
+                                        <img alt="chess piece"
+                                            className={`w-full h-full z-50`}
+                                            src={`/${variableNamesToURLPath[matchingPieceWhite[0]]}`}
+                                        />
+                                    )}
+                                    {matchingPieceBlack && (
+                                        <img alt="chess piece" className="w-full h-full z-50" src={`/${variableNamesToURLPath[matchingPieceBlack[0]]}`} />
+                                    )}
+                                </div>
                             </div>
-                            <div className="w-full h-full p-1 relative">
-                                {matchingPieceWhite && (
-                                    <img alt="chess piece"
-                                        className={`w-full h-full z-50`}
-                                        src={`/${variableNamesToURLPath[matchingPieceWhite[0]]}`}
-                                    />
-                                )}
-                                {matchingPieceBlack && (
-                                    <img alt="chess piece" className="w-full h-full z-50" src={`/${variableNamesToURLPath[matchingPieceBlack[0]]}`} />
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
+                <CapturedPieces
+                    pieces={blackPieces}
+                    player={"white"}
+                />
             </div>
-            <CapturedPieces
-                pieces={blackPieces}
-                player={"white"}
+            <Stats
+                whatWhiteSees={whatWhiteSees}
+                whatBlackSees={whatBlackSees}
+                whitesTurn={whitesTurn}
             />
         </div>
     )
