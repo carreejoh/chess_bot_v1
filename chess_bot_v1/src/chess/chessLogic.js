@@ -1,91 +1,137 @@
-import { variableNamesToPieceType } from "./referenceObjects"
-import { knightMoves, bishopMoves, rookMoves, queenMoves, kingMoves } from "./legalMoves"
+import { variableNamesToPieceType } from "./referenceObjects";
+import {
+    knightMoves,
+    bishopMoves,
+    rookMoves,
+    queenMoves,
+    kingMoves,
+} from "./legalMoves";
 
-import { pawnMoves } from "./legalMoves/pawnMoves"
+import { pawnMoves } from "./legalMoves/pawnMoves";
 
-// 
+//
 // Return an array of locations where this piece can legally move.
 // Does not account for checks
-// 
+//
 
-export const whereCanThatPieceMove = (tile, matchingPiece, whitePieces, blackPieces) => {
+export const whereCanThatPieceMove = (
+    tile,
+    matchingPiece,
+    whitePieces,
+    blackPieces
+) => {
+    let pieceName = variableNamesToPieceType[matchingPiece];
 
-    let pieceName = variableNamesToPieceType[matchingPiece]
+    let moves = [];
 
-    let moves = []
-
-    if(pieceName === "pawn") {
-        moves = pawnMoves(tile, whitePieces, blackPieces)
+    if (pieceName === "pawn") {
+        moves = pawnMoves(tile, whitePieces, blackPieces);
     }
-    if(pieceName === "knight") {
-        moves = knightMoves(tile, whitePieces, blackPieces) 
+    if (pieceName === "knight") {
+        moves = knightMoves(tile, whitePieces, blackPieces);
     }
-    if(pieceName === "bishop") {
-        moves = bishopMoves(tile, whitePieces, blackPieces)
+    if (pieceName === "bishop") {
+        moves = bishopMoves(tile, whitePieces, blackPieces);
     }
-    if(pieceName === "rook") {
-        moves = rookMoves(tile, whitePieces, blackPieces)
+    if (pieceName === "rook") {
+        moves = rookMoves(tile, whitePieces, blackPieces);
     }
-    if(pieceName === "queen") {
-        moves = queenMoves(tile, whitePieces, blackPieces)
+    if (pieceName === "queen") {
+        moves = queenMoves(tile, whitePieces, blackPieces);
     }
-    if(pieceName === "king") {
-        moves = kingMoves(tile, whitePieces, blackPieces)
+    if (pieceName === "king") {
+        moves = kingMoves(tile, whitePieces, blackPieces);
     }
 
-    return moves
-}
+    return moves;
+};
 
-// 
+//
 // Ensure that the piece can legally be moved where the user clicks,
 // Return false if the piece can't be moved
 //
 
-export const movePiece = (currentTile, moveToTile, whitePieces, blackPieces, selectedPiecesArray) => {
-
+export const movePiece = (
+    currentTile,
+    moveToTile,
+    whitePieces,
+    blackPieces,
+    selectedPiecesArray
+) => {
     // Reverse through the location object to find the pieceName variable
     function getPiecenameByLocation(value, locations) {
-        return Object.entries(locations).find(([key, objValue]) => objValue === value)?.[0];
+        return Object.entries(locations).find(
+            ([key, objValue]) => objValue === value
+        )?.[0];
     }
-    
-    const pieceName = getPiecenameByLocation(currentTile, selectedPiecesArray)
-    const legalMoves = whereCanThatPieceMove(currentTile, pieceName, whitePieces, blackPieces)
 
-    if(legalMoves.includes(moveToTile)) {
-        return pieceName
+    const pieceName = getPiecenameByLocation(currentTile, selectedPiecesArray);
+    const legalMoves = whereCanThatPieceMove(
+        currentTile,
+        pieceName,
+        whitePieces,
+        blackPieces
+    );
+
+    if (legalMoves.includes(moveToTile)) {
+        return pieceName;
     } else {
-        return false
+        return false;
     }
-}
+};
 
-// 
+//
 // Ensure that a player can't put their own king in check,
 // Check to see if a player has put the opponents king in check,
-// Return all piece locations for a cool visual that can be toggled  
+// Return all piece locations for a cool visual that can be toggled
 //
 
-export const whatCanAllPiecesSee = (whitePieces, blackPieces, piece, proposedMove) => {
+export const whatCanAllPiecesSee = (
+    whitePieces,
+    blackPieces,
+    piece,
+    proposedMove
+) => {
+    const whitePieceNames = Object.keys(whitePieces);
+    const blackPieceNames = Object.keys(blackPieces);
 
-    let tempWhite = whitePieces
-    let tempBlack = blackPieces
+    let tempWhite = [];
+    let tempWhitePawns = [];
+    let tempBlack = [];
+    let tempBlackPawns = [];
 
-    if(piece.includes("white")) {
-        tempWhite[piece] = proposedMove
-    }
-    if(piece.includes("black")) {
-        tempBlack[piece] = proposedMove
-    }
+    // Loop through white and black pieces and seperate them into pawns/everything else
+
+    Object.entries(whitePieces).forEach(([key, value]) => {
+        if (key.toLowerCase().includes("pawn")) {
+            tempWhitePawns.push({ [key]: value });
+        } else {
+            tempWhite.push({ [key]: value });
+        }
+    });
+
+    Object.entries(blackPieces).forEach(([key, value]) => {
+        if (key.toLowerCase().includes("pawn")) {
+            tempBlackPawns.push({ [key]: value });
+        } else {
+            tempBlack.push({ [key]: value });
+        }
+    });
+
+    
 
     let allWhiteMoves = Object.entries(tempWhite).reduce((acc, [key, value]) => {
         const moves = whereCanThatPieceMove(value, key, tempWhite, tempBlack);
-        return [...acc, ...moves]; 
+        return [...acc, ...moves];
     }, []);
 
-    allWhiteMoves = [...new Set(allWhiteMoves)].filter((move) => move.toLowerCase() !== "nnan");
+    allWhiteMoves = [...new Set(allWhiteMoves)].filter(
+        (move) => move.toLowerCase() !== "nnan"
+    );
 
-    return allWhiteMoves
-    console.log(allWhiteMoves)
-    console.log(blackPieces)
-    console.log(piece)
-    console.log(proposedMove)
-}
+    return allWhiteMoves;
+    console.log(allWhiteMoves);
+    console.log(blackPieces);
+    console.log(piece);
+    console.log(proposedMove);
+};

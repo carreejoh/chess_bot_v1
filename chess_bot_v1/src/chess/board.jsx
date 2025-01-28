@@ -25,8 +25,6 @@ function Board() {
 
     const [whatWhiteSees, setWhatWhiteSees] = useState([])
 
-    console.log(whatWhiteSees)
-
     // This logic builds the board 
     const allBoardSquares = [];
     const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -197,7 +195,7 @@ function Board() {
                                 ${legalMovesForSelectedPiece.includes(tile) && "selectedSquare"} 
                                 ${lastClickedSquare === tile && whitesTurn && matchingPieceWhite && "selectedSquare"}
                                 ${lastClickedSquare === tile && !whitesTurn && matchingPieceBlack && "selectedSquare"}
-                                ${whatWhiteSees.includes(tile) && "whatWhiteSees"}`
+                               `
                             }
 
                             // When part of the board is clicked, find out if that square has a piece on it
