@@ -3,6 +3,9 @@ import { initialWhitePieces, initialBlackPieces } from "./chessLocations";
 import { whereCanThatPieceMove, movePiece } from "./chessLogic";
 import { variableNamesToURLPath } from "./referenceObjects";
 
+import Controls from "./secondary/controls";
+import CapturedPieces from "./secondary/capturedPieces";
+
 function Board() {
 
     const [whitePieces, setWhitePieces] = useState(initialWhitePieces)
@@ -148,7 +151,7 @@ function Board() {
 
     return (
         <div>
-            <div className="flex">
+            {/* <div className="flex">
                 <button onClick={() => { setWhitePieces(initialWhitePieces); setBlackPieces(initialBlackPieces) }}>
                     Reset
                 </button>
@@ -160,9 +163,12 @@ function Board() {
                     <div className="h-4 w-4 bg-black">
                     </div>
                 )}
-            </div>
+            </div> */}
+            <CapturedPieces
+                pieces={whitePieces}
+                player={"black"}
+            />
             <div className="w-[700px] h-[700px] bg-gray-400 grid grid-cols-8 grid-rows-8 border-[4px] border-gray-700">
-
                 {allBoardSquares.map((tile, index) => {
 
                     // 
@@ -203,8 +209,11 @@ function Board() {
                         </div>
                     );
                 })}
-
             </div>
+            <CapturedPieces
+                pieces={blackPieces}
+                player={"white"}
+            />
         </div>
     )
 }
