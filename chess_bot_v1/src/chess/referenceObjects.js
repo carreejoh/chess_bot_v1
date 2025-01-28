@@ -19,7 +19,23 @@ export const variableNamesToURLPath = {
     "whiteBishopOne": "white_bishop.png",
     "whiteBishopTwo": "white_bishop.png",
     "whiteQueen": "white_queen.png",
-    "whiteKing": "white_king.png"
+    "whiteKing": "white_king.png",
+    "blackPawnOne": "black_pawn.png",
+    "blackPawnTwo": "black_pawn.png",
+    "blackPawnThree": "black_pawn.png",
+    "blackPawnFour": "black_pawn.png",
+    "blackPawnFive": "black_pawn.png",
+    "blackPawnSix": "black_pawn.png",
+    "blackPawnSeven": "black_pawn.png",
+    "blackPawnEight": "black_pawn.png",
+    "blackRookOne": "black_rook.png",
+    "blackRookTwo": "black_rook.png",
+    "blackKnightOne": "black_knight.png",
+    "blackKnightTwo": "black_knight.png",
+    "blackBishopOne": "black_bishop.png",
+    "blackBishopTwo": "black_bishop.png",
+    "blackQueen": "black_queen.png",
+    "blackKing": "black_king.png"
 }
 
 // 
@@ -42,7 +58,23 @@ export const variableNamesToPieceType = {
     "whiteBishopOne": "bishop",
     "whiteBishopTwo": "bishop",
     "whiteQueen": "queen",
-    "whiteKing": "king"
+    "whiteKing": "king",
+    "blackPawnOne": "pawn",
+    "blackPawnTwo": "pawn",
+    "blackPawnThree": "pawn",
+    "blackPawnFour": "pawn",
+    "blackPawnFive": "pawn",
+    "blackPawnSix": "pawn",
+    "blackPawnSeven": "pawn",
+    "blackPawnEight": "pawn",
+    "blackRookOne": "rook",
+    "blackRookTwo": "rook",
+    "blackKnightOne": "knight",
+    "blackKnightTwo": "knight",
+    "blackBishopOne": "bishop",
+    "blackBishopTwo": "bishop",
+    "blackQueen": "queen",
+    "blackKing": "king"
 }
 
 export const fullBoardWithNegativesForDepth = {

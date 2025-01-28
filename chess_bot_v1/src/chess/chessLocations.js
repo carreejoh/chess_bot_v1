@@ -18,3 +18,22 @@ export const initialWhitePieces = {
     whiteQueen: "d1",
     whiteKing: "e1",
 };
+
+export const initialBlackPieces = {
+    blackPawnOne: "a7",
+    blackPawnTwo: "b7",
+    blackPawnThree: "c7",
+    blackPawnFour: "d7",
+    blackPawnFive: "e7",
+    blackPawnSix: "f7",
+    blackPawnSeven: "g7",
+    blackPawnEight: "h7",
+    blackRookOne: "a8",
+    blackRookTwo: "h8",
+    blackKnightOne: "b8",
+    blackKnightTwo: "g8",
+    blackBishopOne: "c8",
+    blackBishopTwo: "f8",
+    blackQueen: "d8",
+    blackKing: "e8",
+}

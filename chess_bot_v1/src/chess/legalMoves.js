@@ -2,27 +2,39 @@
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const ranks = ["8", "7", "6", "5", "4", "3", "2", "1"];
 
-export const pawnMoves = (tile, whitePieces) => {
+export const pawnMoves = (tile, whitePieces, blackPieces) => {
 
     const whitePiecePositions = Object.values(whitePieces);
+    const blackPiecePositions = Object.values(blackPieces);
 
     let file = tile[0]
     let rank = Number(tile[1])
     let moves = []
 
-    if (rank === 2) {
-        moves.push(`${file}${rank + 1}`)
-        moves.push(`${file}${rank + 2}`)
-    } else {
-        moves.push(`${file}${rank + 1}`)
+    if (whitePiecePositions.includes(tile)) {
+        if (rank === 2) {
+            moves.push(`${file}${rank + 1}`)
+            moves.push(`${file}${rank + 2}`)
+        } else {
+            moves.push(`${file}${rank + 1}`)
+        }
+    }
+    if (blackPiecePositions.includes(tile)) {
+        if (rank === 7) {
+            moves.push(`${file}${rank - 1}`)
+            moves.push(`${file}${rank - 2}`)
+        } else {
+            moves.push(`${file}${rank - 1}`)
+        }
     }
 
     return moves
 }
 
-export const knightMoves = (tile, whitePieces) => {
+export const knightMoves = (tile, whitePieces, blackPieces) => {
 
     const whitePiecePositions = Object.values(whitePieces);
+    const blackPiecePositions = Object.values(blackPieces);
 
     let file = tile[0]
     let rank = tile[1]
@@ -46,15 +58,33 @@ export const knightMoves = (tile, whitePieces) => {
     // Find moves that are off the board and remove them
     moves = moves.filter((move) => !move.includes("undefined"));
 
-    // Find moves that are occupied by other piece
-    moves = moves.filter((position) => !whitePiecePositions.includes(position));
+    // Find moves that are occupied by the same player's pieces
+    if (whitePiecePositions.includes(tile)) {
+        moves = moves.filter((position) => !whitePiecePositions.includes(position));
+    }
+    if (blackPiecePositions.includes(tile)) {
+        moves = moves.filter((position) => !blackPiecePositions.includes(position));
+    }
 
     return moves
 }
 
-export const bishopMoves = (tile, whitePieces) => {
+export const bishopMoves = (tile, whitePieces, blackPieces) => {
 
     const whitePiecePositions = Object.values(whitePieces);
+    const blackPiecePositions = Object.values(blackPieces);
+
+    let playersArray = []
+    let opponentsArray = []
+
+    if (whitePiecePositions.includes(tile)) {
+        playersArray = whitePiecePositions
+        opponentsArray = blackPiecePositions
+    }
+    if (blackPiecePositions.includes(tile)) {
+        playersArray = blackPiecePositions
+        opponentsArray = whitePiecePositions
+    }
 
     let file = tile[0]
     let rank = tile[1]
@@ -65,22 +95,38 @@ export const bishopMoves = (tile, whitePieces) => {
 
     for (let i = 1; i < 8; i++) {
         let downRight = `${files[fileLocationIndex + i]}${ranks[rankLocationIndex + i]}`
-        if(whitePiecePositions.includes(downRight)) break
+        if (playersArray.includes(downRight)) break
+        if (opponentsArray.includes(downRight)) {
+            moves.push(downRight)
+            break
+        }
         moves.push(downRight)
     }
     for (let i = 1; i < 8; i++) {
         let downLeft = `${files[fileLocationIndex - i]}${ranks[rankLocationIndex + i]}`
-        if(whitePiecePositions.includes(downLeft)) break
+        if (playersArray.includes(downLeft)) break
+        if (opponentsArray.includes(downLeft)) {
+            moves.push(downLeft)
+            break
+        }
         moves.push(downLeft)
     }
     for (let i = 1; i < 8; i++) {
         let upRight = `${files[fileLocationIndex + i]}${ranks[rankLocationIndex - i]}`
-        if(whitePiecePositions.includes(upRight)) break
+        if (playersArray.includes(upRight)) break
+        if (opponentsArray.includes(upRight)) {
+            moves.push(upRight)
+            break
+        }
         moves.push(upRight)
     }
     for (let i = 1; i < 8; i++) {
         let upLeft = `${files[fileLocationIndex - i]}${ranks[rankLocationIndex - i]}`
-        if(whitePiecePositions.includes(upLeft)) break
+        if (playersArray.includes(upLeft)) break
+        if (opponentsArray.includes(upLeft)) {
+            moves.push(upLeft)
+            break
+        }
         moves.push(upLeft)
     }
 
@@ -89,9 +135,22 @@ export const bishopMoves = (tile, whitePieces) => {
     return moves
 }
 
-export const rookMoves = (tile, whitePieces) => {
+export const rookMoves = (tile, whitePieces, blackPieces) => {
 
     const whitePiecePositions = Object.values(whitePieces);
+    const blackPiecePositions = Object.values(blackPieces);
+
+    let playersArray = []
+    let opponentsArray = []
+
+    if (whitePiecePositions.includes(tile)) {
+        playersArray = whitePiecePositions
+        opponentsArray = blackPiecePositions
+    }
+    if (blackPiecePositions.includes(tile)) {
+        playersArray = blackPiecePositions
+        opponentsArray = whitePiecePositions
+    }
 
     let file = tile[0]
     let rank = tile[1]
@@ -100,24 +159,40 @@ export const rookMoves = (tile, whitePieces) => {
     let fileLocationIndex = files.indexOf(file)
     let rankLocationIndex = ranks.indexOf(rank)
 
-    for(let i = 1; i < 8; i++) {
+    for (let i = 1; i < 8; i++) {
         let up = `${file}${ranks[rankLocationIndex + i]}`
-        if(whitePiecePositions.includes(up)) break
+        if (playersArray.includes(up)) break
+        if (opponentsArray.includes(up)) {
+            moves.push(up)
+            break
+        }
         moves.push(up)
     }
-    for(let i = 1; i < 8; i++) {
+    for (let i = 1; i < 8; i++) {
         let down = `${file}${ranks[rankLocationIndex - i]}`
-        if(whitePiecePositions.includes(down)) break
+        if (playersArray.includes(down)) break
+        if (opponentsArray.includes(down)) {
+            moves.push(down)
+            break
+        }
         moves.push(down)
     }
-    for(let i = 1; i < 8; i++) {
+    for (let i = 1; i < 8; i++) {
         let left = `${files[fileLocationIndex - i]}${rank}`
-        if(whitePiecePositions.includes(left)) break
+        if (playersArray.includes(left)) break
+        if (opponentsArray.includes(left)) {
+            moves.push(left)
+            break
+        }
         moves.push(left)
     }
-    for(let i = 1; i < 8; i++) {
+    for (let i = 1; i < 8; i++) {
         let right = `${files[fileLocationIndex + i]}${rank}`
-        if(whitePiecePositions.includes(right)) break
+        if (playersArray.includes(right)) break
+        if (opponentsArray.includes(right)) {
+            moves.push(right)
+            break
+        }
         moves.push(right)
     }
 
@@ -126,9 +201,22 @@ export const rookMoves = (tile, whitePieces) => {
     return moves
 }
 
-export const queenMoves = (tile, whitePieces) => {
+export const queenMoves = (tile, whitePieces, blackPieces) => {
 
     const whitePiecePositions = Object.values(whitePieces);
+    const blackPiecePositions = Object.values(blackPieces);
+
+    let playersArray = []
+    let opponentsArray = []
+
+    if (whitePiecePositions.includes(tile)) {
+        playersArray = whitePiecePositions
+        opponentsArray = blackPiecePositions
+    }
+    if (blackPiecePositions.includes(tile)) {
+        playersArray = blackPiecePositions
+        opponentsArray = whitePiecePositions
+    }
 
     let file = tile[0]
     let rank = tile[1]
@@ -139,43 +227,75 @@ export const queenMoves = (tile, whitePieces) => {
 
     for (let i = 1; i < 8; i++) {
         let downRight = `${files[fileLocationIndex + i]}${ranks[rankLocationIndex + i]}`
-        if(whitePiecePositions.includes(downRight)) break
+        if (playersArray.includes(downRight)) break
+        if (opponentsArray.includes(downRight)) {
+            moves.push(downRight)
+            break
+        }
         moves.push(downRight)
     }
     for (let i = 1; i < 8; i++) {
         let downLeft = `${files[fileLocationIndex - i]}${ranks[rankLocationIndex + i]}`
-        if(whitePiecePositions.includes(downLeft)) break
+        if (playersArray.includes(downLeft)) break
+        if (opponentsArray.includes(downLeft)) {
+            moves.push(downLeft)
+            break
+        }
         moves.push(downLeft)
     }
     for (let i = 1; i < 8; i++) {
         let upRight = `${files[fileLocationIndex + i]}${ranks[rankLocationIndex - i]}`
-        if(whitePiecePositions.includes(upRight)) break
+        if (playersArray.includes(upRight)) break
+        if (opponentsArray.includes(upRight)) {
+            moves.push(upRight)
+            break
+        }
         moves.push(upRight)
     }
     for (let i = 1; i < 8; i++) {
         let upLeft = `${files[fileLocationIndex - i]}${ranks[rankLocationIndex - i]}`
-        if(whitePiecePositions.includes(upLeft)) break
+        if (playersArray.includes(upLeft)) break
+        if (opponentsArray.includes(upLeft)) {
+            moves.push(upLeft)
+            break
+        }
         moves.push(upLeft)
     }
 
-    for(let i = 1; i < 8; i++) {
+    for (let i = 1; i < 8; i++) {
         let up = `${file}${ranks[rankLocationIndex + i]}`
-        if(whitePiecePositions.includes(up)) break
+        if (playersArray.includes(up)) break
+        if (opponentsArray.includes(up)) {
+            moves.push(up)
+            break
+        }
         moves.push(up)
     }
-    for(let i = 1; i < 8; i++) {
+    for (let i = 1; i < 8; i++) {
         let down = `${file}${ranks[rankLocationIndex - i]}`
-        if(whitePiecePositions.includes(down)) break
+        if (playersArray.includes(down)) break
+        if (opponentsArray.includes(down)) {
+            moves.push(down)
+            break
+        }
         moves.push(down)
     }
-    for(let i = 1; i < 8; i++) {
+    for (let i = 1; i < 8; i++) {
         let left = `${files[fileLocationIndex - i]}${rank}`
-        if(whitePiecePositions.includes(left)) break
+        if (playersArray.includes(left)) break
+        if (opponentsArray.includes(left)) {
+            moves.push(left)
+            break
+        }
         moves.push(left)
     }
-    for(let i = 1; i < 8; i++) {
+    for (let i = 1; i < 8; i++) {
         let right = `${files[fileLocationIndex + i]}${rank}`
-        if(whitePiecePositions.includes(right)) break
+        if (playersArray.includes(right)) break
+        if (opponentsArray.includes(right)) {
+            moves.push(right)
+            break
+        }
         moves.push(right)
     }
 
@@ -184,9 +304,22 @@ export const queenMoves = (tile, whitePieces) => {
     return moves
 }
 
-export const kingMoves = (tile, whitePieces) => {
+export const kingMoves = (tile, whitePieces, blackPieces) => {
 
     const whitePiecePositions = Object.values(whitePieces);
+    const blackPiecePositions = Object.values(blackPieces);
+
+    let playersArray = []
+    let opponentsArray = []
+
+    if (whitePiecePositions.includes(tile)) {
+        playersArray = whitePiecePositions
+        opponentsArray = blackPiecePositions
+    }
+    if (blackPiecePositions.includes(tile)) {
+        playersArray = blackPiecePositions
+        opponentsArray = whitePiecePositions
+    }
 
     let file = tile[0]
     let rank = tile[1]
@@ -195,29 +328,29 @@ export const kingMoves = (tile, whitePieces) => {
     let fileLocationIndex = files.indexOf(file)
     let rankLocationIndex = ranks.indexOf(rank)
 
-        let downRight = `${files[fileLocationIndex + 1]}${ranks[rankLocationIndex + 1]}`
-        if(!whitePiecePositions.includes(downRight)) { moves.push(downRight) }
+    let downRight = `${files[fileLocationIndex + 1]}${ranks[rankLocationIndex + 1]}`
+    if (!playersArray.includes(downRight)) { moves.push(downRight) }
 
-        let downLeft = `${files[fileLocationIndex - 1]}${ranks[rankLocationIndex + 1]}`
-        if(!whitePiecePositions.includes(downLeft)) { moves.push(downLeft) }
-    
-        let upRight = `${files[fileLocationIndex + 1]}${ranks[rankLocationIndex - 1]}`
-        if(!whitePiecePositions.includes(upRight)) { moves.push(upRight) }
-    
-        let upLeft = `${files[fileLocationIndex - 1]}${ranks[rankLocationIndex - 1]}`
-        if(!whitePiecePositions.includes(upLeft)) { moves.push(upLeft) }
-    
-        let down = `${file}${ranks[rankLocationIndex + 1]}`
-        if(!whitePiecePositions.includes(down)) { moves.push(down) }
-    
-        let up = `${file}${ranks[rankLocationIndex - 1]}`
-        if(!whitePiecePositions.includes(up)) { moves.push(up) }
-    
-        let left = `${files[fileLocationIndex - 1]}${rank}`
-        if(!whitePiecePositions.includes(left)) { moves.push(left) }
-    
-        let right = `${files[fileLocationIndex + 1]}${rank}`
-        if(!whitePiecePositions.includes(right)) { moves.push(right) }
+    let downLeft = `${files[fileLocationIndex - 1]}${ranks[rankLocationIndex + 1]}`
+    if (!playersArray.includes(downLeft)) { moves.push(downLeft) }
+
+    let upRight = `${files[fileLocationIndex + 1]}${ranks[rankLocationIndex - 1]}`
+    if (!playersArray.includes(upRight)) { moves.push(upRight) }
+
+    let upLeft = `${files[fileLocationIndex - 1]}${ranks[rankLocationIndex - 1]}`
+    if (!playersArray.includes(upLeft)) { moves.push(upLeft) }
+
+    let down = `${file}${ranks[rankLocationIndex + 1]}`
+    if (!playersArray.includes(down)) { moves.push(down) }
+
+    let up = `${file}${ranks[rankLocationIndex - 1]}`
+    if (!playersArray.includes(up)) { moves.push(up) }
+
+    let left = `${files[fileLocationIndex - 1]}${rank}`
+    if (!playersArray.includes(left)) { moves.push(left) }
+
+    let right = `${files[fileLocationIndex + 1]}${rank}`
+    if (!playersArray.includes(right)) { moves.push(right) }
 
     moves = moves.filter((move) => !move.includes("undefined"));
 
