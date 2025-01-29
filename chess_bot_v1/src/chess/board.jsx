@@ -15,6 +15,7 @@ function Board() {
     // Checkmates
     // En Passant
     // Can castle through check
+    // Make squares that show darker colors for how many pieces see it
 
     // This tracks the location of the white and black pieces
     const [whitePieces, setWhitePieces] = useState(initialWhitePieces)
@@ -25,6 +26,9 @@ function Board() {
     // useful for ensuring the king isnt put in check
     const [whatWhiteSees, setWhatWhiteSees] = useState([])
     const [whatBlackSees, setWhatBlackSees] = useState([])
+
+    const [whatPlayerSeeWithDuplicates, setWhatPlayerCanSeeWithDuplicates] = useState([])
+
     // Track if either king is in check
     const [isWhiteKingInCheck, setIsWhiteKingInCheck] = useState(false)
     const [isBlackKingInCheck, setIsBlackKingInCheck] = useState(false)
