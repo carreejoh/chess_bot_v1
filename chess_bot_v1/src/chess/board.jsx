@@ -11,10 +11,10 @@ import Stats from "./secondary/stats";
 function Board() {
 
     // TODO
-    // Capturing a piece does not light up square if king in check
+    // Capturing a piece does not always light up square if king in check
     // Checkmates
-    // Can castle even after king/rook movement
     // En Passant
+    // Can castle through check
 
     // This tracks the location of the white and black pieces
     const [whitePieces, setWhitePieces] = useState(initialWhitePieces)
