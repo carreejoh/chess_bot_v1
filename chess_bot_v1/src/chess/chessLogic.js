@@ -18,7 +18,8 @@ export const whereCanThatPieceMove = (
     tile,
     matchingPiece,
     whitePieces,
-    blackPieces
+    blackPieces,
+    castlingVariables
 ) => {
     let pieceName = variableNamesToPieceType[matchingPiece];
 
@@ -40,7 +41,12 @@ export const whereCanThatPieceMove = (
         moves = queenMoves(tile, whitePieces, blackPieces);
     }
     if (pieceName === "king") {
-        moves = kingMoves(tile, whitePieces, blackPieces);
+        moves = kingMoves(
+            tile, 
+            whitePieces, 
+            blackPieces,
+            castlingVariables
+        );
     }
 
     return moves;
@@ -56,8 +62,10 @@ export const movePiece = (
     moveToTile,
     whitePieces,
     blackPieces,
-    selectedPiecesArray
+    selectedPiecesArray,
+    castlingVariables
 ) => {
+
     // Reverse through the location object to find the pieceName variable
     function getPiecenameByLocation(value, locations) {
         return Object.entries(locations).find(
@@ -70,7 +78,8 @@ export const movePiece = (
         currentTile,
         pieceName,
         whitePieces,
-        blackPieces
+        blackPieces,
+        castlingVariables
     );
 
     if (legalMoves.includes(moveToTile)) {
@@ -87,6 +96,7 @@ export const movePiece = (
 export const whatCanAllPiecesSee = (
     whitePieces,
     blackPieces,
+    castlingVariables
 ) => {
     
     let allWhiteMoves = []
@@ -124,12 +134,12 @@ export const whatCanAllPiecesSee = (
     // with the proposed move
 
     let whatWhiteMajorsSee = Object.entries(tempWhite).reduce((acc, [key, value]) => {
-        const moves = whereCanThatPieceMove(value, key, combinedWhite, combinedBlack);
+        const moves = whereCanThatPieceMove(value, key, combinedWhite, combinedBlack, castlingVariables);
         return [...acc, ...moves];
     }, []);
 
     let whatBlackMajorsSee = Object.entries(tempBlack).reduce((acc, [key, value]) => {
-        const moves = whereCanThatPieceMove(value, key, combinedWhite, combinedBlack);
+        const moves = whereCanThatPieceMove(value, key, combinedWhite, combinedBlack, castlingVariables);
         return [...acc, ...moves];
     }, []);
 
@@ -175,7 +185,8 @@ export const isEitherKingInCheck = (
     proposedMove,
     whosTurn,
     isWhiteKingInCheck,
-    isBlackKingInCheck
+    isBlackKingInCheck,
+    castlingVariables
 ) => {
 
     let tempWhite = {}
@@ -228,7 +239,7 @@ export const isEitherKingInCheck = (
     const combinedWhite = { ...tempWhite, ...tempWhitePawns }
     const combinedBlack = { ...tempBlack, ...tempBlackPawns }
 
-    let whatCanPiecesSeeWithProposedMove = whatCanAllPiecesSee(combinedWhite, combinedBlack)
+    let whatCanPiecesSeeWithProposedMove = whatCanAllPiecesSee(combinedWhite, combinedBlack, castlingVariables)
 
     let whiteKingLocation = combinedWhite.whiteKing
     let blackKingLocation = combinedBlack.blackKing

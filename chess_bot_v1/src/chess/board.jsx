@@ -11,12 +11,10 @@ import Stats from "./secondary/stats";
 function Board() {
 
     // TODO
-    // Can't put yourself in check (walking king, or moving piece)
-    // Have to move out of check
+    // Capturing a piece does not light up square if king in check
     // Checkmates
-    // Castle
+    // Can castle even after king/rook movement
     // En Passant
-    // What does white/black "see"
 
     // This tracks the location of the white and black pieces
     const [whitePieces, setWhitePieces] = useState(initialWhitePieces)
@@ -30,6 +28,16 @@ function Board() {
     // Track if either king is in check
     const [isWhiteKingInCheck, setIsWhiteKingInCheck] = useState(false)
     const [isBlackKingInCheck, setIsBlackKingInCheck] = useState(false)
+
+    // Variables for castling
+    const [castlingVariables, setCastlingVariables] = useState({
+        hasWhiteKingBeenMoved: false,
+        hasBlackKingBeenMoved: false,
+        hasWhiteRookOneBeenMoved: false,
+        hasWhiteRookTwoBeenMoved: false,
+        hasBlackRookOneBeenMoved: false,
+        hasBlackRookTwoBeenMoved: false
+    })
 
     // This logic builds the board 
     const allBoardSquares = [];
@@ -47,7 +55,7 @@ function Board() {
     // This is for viewing only!
     // Visualize what is seen by every piece dependent on player
     useEffect(() => {
-        let attacks = whatCanAllPiecesSee(whitePieces, blackPieces)
+        let attacks = whatCanAllPiecesSee(whitePieces, blackPieces, castlingVariables)
         setWhatWhiteSees(attacks.allWhiteMoves)
         setWhatBlackSees(attacks.allBlackMoves)
     }, [whitePieces, blackPieces])
@@ -90,6 +98,42 @@ function Board() {
         }
     }
 
+    // Handle castling based on tile passed in 
+
+    const handleCastling = (tile) => {
+        // White king-side castle
+        if(tile === "g1") {
+            changePieceLocation("whiteKing", "g1")
+            changePieceLocation("whiteRookTwo", "f1")
+        }
+        // White queen-side castle
+        if(tile === "c1") {
+            changePieceLocation("whiteKing", "c1")
+            changePieceLocation("whiteRookOne", "d1")
+        }
+        // Black king-side castle
+        if(tile === "g8") {
+            changePieceLocation("blackKing", "g8")
+            changePieceLocation("blackRookTwo", "f8")
+        }
+        // Black queen-side castle
+        if(tile === "c8") {
+            changePieceLocation("blackKing", "c8")
+            changePieceLocation("blackRookOne", "d8")
+        }
+    }
+
+    // Change the castling variables based on piece movement
+
+    const toggleCastlingVariable = (key) => {
+        setCastlingVariables((prevState) => ({
+            ...prevState,
+            [key]: !prevState[key], 
+        }));
+    };
+
+    console.log(castlingVariables)
+
     // 
     // This searches each object by key, and finds what the piece variable name is
     // 
@@ -114,7 +158,7 @@ function Board() {
 
         if (whitesTurn) {
             if (matchingPieceWhite) {
-                locations = whereCanThatPieceMove(tile, matchingPieceWhite, whitePieces, blackPieces)
+                locations = whereCanThatPieceMove(tile, matchingPieceWhite, whitePieces, blackPieces, castlingVariables)
             }
             setLegalMovesForSelectedPiece(locations)
 
@@ -125,15 +169,40 @@ function Board() {
 
             // Move a piece to empty space or capture
             if (whitePiecePositions.includes(lastClickedSquare) && !whitePiecePositions.includes(tile)) {
-                let validMove = movePiece(lastClickedSquare, tile, whitePieces, blackPieces, whitePieces)
+
+                // Check to see where that piece can move to based on piece type, and what's in it's way
+                let validMove = movePiece(lastClickedSquare, tile, whitePieces, blackPieces, whitePieces, castlingVariables)
                 if (validMove) {
-                    let isKingInCheck = isEitherKingInCheck(whitePieces, blackPieces, validMove, tile, "white", isWhiteKingInCheck, isBlackKingInCheck)
+
+                    // Check to see if the king is in check, or if moving a piece would put it in check
+                    let isKingInCheck = isEitherKingInCheck(whitePieces, blackPieces, validMove, tile, "white", isWhiteKingInCheck, isBlackKingInCheck, castlingVariables)
 
                     setIsWhiteKingInCheck(isKingInCheck.whiteKingStatus)
                     setIsBlackKingInCheck(isKingInCheck.blackKingStatus)
 
+                    // If the king is not in check, or it's a valid move, move the piece
                     if(isKingInCheck.legalMove) {
+
+                        // Check to see if the player is castling
+                        let pieceName = getPiecenameByLocation(lastClickedSquare, whitePieces)
+                        if(pieceName === "whiteKing" && tile === "g1" && !castlingVariables.hasWhiteKingBeenMoved && !castlingVariables.hasWhiteRookTwoBeenMoved) {
+                            handleCastling(tile)
+                            toggleCastlingVariable("hasWhiteKingBeenMoved")
+                            return
+                        }
+                        if(pieceName === "whiteKing" && tile === "c1" && !castlingVariables.hasWhiteKingBeenMoved && !castlingVariables.hasWhiteRookOneBeenMoved) {
+                            handleCastling(tile)
+                            toggleCastlingVariable("hasWhiteKingBeenMoved")
+                            return
+                        }
+
+                        // Account for any movement to rook one, rook two, or king
+                        if(pieceName === "whiteKing") { toggleCastlingVariable("hasWhiteKingBeenMoved") }
+                        if(pieceName === "whiteRookOne") { toggleCastlingVariable("hasWhiteRookOneBeenMoved") }
+                        if(pieceName === "whiteRookTwo") { toggleCastlingVariable("hasWhiteRookTwoBeenMoved") }
+
                         changePieceLocation(validMove, tile)
+                        
                         // This represents a capture
                         if (blackPiecePositions.includes(tile)) {
                             const blackPiece = getPiecenameByLocation(tile, blackPieces)
@@ -147,7 +216,7 @@ function Board() {
 
         if (!whitesTurn) {
             if (matchingPieceBlack) {
-                locations = whereCanThatPieceMove(tile, matchingPieceBlack, whitePieces, blackPieces)
+                locations = whereCanThatPieceMove(tile, matchingPieceBlack, whitePieces, blackPieces, castlingVariables)
             }
             setLegalMovesForSelectedPiece(locations)
 
@@ -158,14 +227,33 @@ function Board() {
 
             // /a piece to empty space or capture
             if (blackPiecePositions.includes(lastClickedSquare) && !blackPiecePositions.includes(tile)) {
-                let validMove = movePiece(lastClickedSquare, tile, whitePieces, blackPieces, blackPieces)
+                let validMove = movePiece(lastClickedSquare, tile, whitePieces, blackPieces, blackPieces, castlingVariables)
                 if (validMove) {
-                    let isKingInCheck = isEitherKingInCheck(whitePieces, blackPieces, validMove, tile, "black")
+                    let isKingInCheck = isEitherKingInCheck(whitePieces, blackPieces, validMove, tile, "black", isWhiteKingInCheck, isBlackKingInCheck, castlingVariables)
 
                     setIsWhiteKingInCheck(isKingInCheck.whiteKingStatus)
                     setIsBlackKingInCheck(isKingInCheck.blackKingStatus)
 
                     if(isKingInCheck.legalMove) {
+
+                        // Check to see if the player is castling
+                        let pieceName = getPiecenameByLocation(lastClickedSquare, blackPieces)
+                        if(pieceName === "blackKing" && tile === "g8" && !castlingVariables.hasBlackKingBeenMoved && !castlingVariables.hasBlackRookTwoBeenMoved) {
+                            handleCastling(tile)
+                            toggleCastlingVariable("hasBlackKingBeenMoved")
+                            return
+                        }
+                        if(pieceName === "blackKing" && tile === "c8" && !castlingVariables.hasBlackKingBeenMoved && !castlingVariables.hasBlackRookOneBeenMoved) {
+                            handleCastling(tile)
+                            toggleCastlingVariable("hasBlackKingBeenMoved")
+                            return
+                        }
+
+                        // Account for any movement to rook one, rook two, or king
+                        if(pieceName === "blackKing") { toggleCastlingVariable("hasBlackKingBeenMoved") }
+                        if(pieceName === "blackRookOne") { toggleCastlingVariable("hasBlackRookOneBeenMoved") }
+                        if(pieceName === "blackRookTwo") { toggleCastlingVariable("hasBlackRookTwoBeenMoved") }
+
                         changePieceLocation(validMove, tile)
                         // This represents a capture
                         if (whitePiecePositions.includes(tile)) {
