@@ -161,6 +161,9 @@ export const whatCanAllPiecesSee = (
     allWhiteMoves = [...whatWhiteMajorsSee, ...whatCanWhitePawnsSee]
     allBlackMoves = [...whatBlackMajorsSee, ...whatCanBlackPawnsSee]
 
+    let unFilteredWhiteMoves = allWhiteMoves
+    let unFilteredBlackMoves = allBlackMoves 
+
     allWhiteMoves = [...new Set(allWhiteMoves)].filter(
         (move) => 
             move.toLowerCase() !== "nnan" && !move.toLowerCase().includes("undefined")
@@ -171,7 +174,7 @@ export const whatCanAllPiecesSee = (
             move.toLowerCase() !== "nnan" && !move.toLowerCase().includes("undefined")
     );
 
-    return { allWhiteMoves, allBlackMoves }
+    return { allWhiteMoves, allBlackMoves, unFilteredWhiteMoves, unFilteredBlackMoves }
 
 };
 

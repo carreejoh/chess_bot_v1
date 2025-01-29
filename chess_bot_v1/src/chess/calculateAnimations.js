@@ -33,5 +33,5 @@ export const calculateAnimations = (startingTile, endingTile) => {
     console.log("Distance:", distance);
     console.log("Angle:", angle);
 
-    return { distance, angle };
+    return { distance, angle, endCenter, dx, dy };
 };

@@ -7,6 +7,7 @@ import { calculateAnimations } from "./calculateAnimations";
 import Controls from "./secondary/controls";
 import CapturedPieces from "./secondary/capturedPieces";
 import Stats from "./secondary/stats";
+import Pieces from "./secondary/pieces";
 
 function Board() {
 
@@ -27,7 +28,14 @@ function Board() {
     const [whatWhiteSees, setWhatWhiteSees] = useState([])
     const [whatBlackSees, setWhatBlackSees] = useState([])
 
+    const [showLayeredAttacks, setShowLayeredAttacks] = useState(false)
     const [whatPlayerSeeWithDuplicates, setWhatPlayerCanSeeWithDuplicates] = useState([])
+
+    const [tileToBeAnimated, setTileToBeAnimated] = useState(null)
+    const [animations, setAnimations] = useState({
+        dx: 0,
+        dy: 0
+    })
 
     // Track if either king is in check
     const [isWhiteKingInCheck, setIsWhiteKingInCheck] = useState(false)
@@ -62,6 +70,8 @@ function Board() {
         let attacks = whatCanAllPiecesSee(whitePieces, blackPieces, castlingVariables)
         setWhatWhiteSees(attacks.allWhiteMoves)
         setWhatBlackSees(attacks.allBlackMoves)
+        if(whitesTurn) { setWhatPlayerCanSeeWithDuplicates(attacks.unFilteredWhiteMoves) }
+        if(!whitesTurn) { setWhatPlayerCanSeeWithDuplicates(attacks.unFilteredBlackMoves) }
     }, [whitePieces, blackPieces])
 
     // 
@@ -136,8 +146,6 @@ function Board() {
         }));
     };
 
-    console.log(castlingVariables)
-
     // 
     // This searches each object by key, and finds what the piece variable name is
     // 
@@ -201,11 +209,20 @@ function Board() {
                         }
 
                         // Account for any movement to rook one, rook two, or king
-                        if(pieceName === "whiteKing") { toggleCastlingVariable("hasWhiteKingBeenMoved") }
-                        if(pieceName === "whiteRookOne") { toggleCastlingVariable("hasWhiteRookOneBeenMoved") }
-                        if(pieceName === "whiteRookTwo") { toggleCastlingVariable("hasWhiteRookTwoBeenMoved") }
+                        if(pieceName === "whiteKing" && !castlingVariables.hasWhiteKingBeenMoved) { toggleCastlingVariable("hasWhiteKingBeenMoved") }
+                        if(pieceName === "whiteRookOne" && !castlingVariables.hasWhiteRookOneBeenMoved) { toggleCastlingVariable("hasWhiteRookOneBeenMoved") }
+                        if(pieceName === "whiteRookTwo" && !castlingVariables.hasWhiteRookTwoBeenMoved) { toggleCastlingVariable("hasWhiteRookTwoBeenMoved") }
 
-                        changePieceLocation(validMove, tile)
+                        const animationAngles = calculateAnimations(lastClickedSquare, tile)
+
+                        setTileToBeAnimated(lastClickedSquare)
+                        setAnimations(animationAngles)
+
+                        setTimeout(() => {
+                            setTileToBeAnimated(null)
+                            changePieceLocation(validMove, tile)
+                        }, 150)
+               
                         
                         // This represents a capture
                         if (blackPiecePositions.includes(tile)) {
@@ -254,11 +271,20 @@ function Board() {
                         }
 
                         // Account for any movement to rook one, rook two, or king
-                        if(pieceName === "blackKing") { toggleCastlingVariable("hasBlackKingBeenMoved") }
-                        if(pieceName === "blackRookOne") { toggleCastlingVariable("hasBlackRookOneBeenMoved") }
-                        if(pieceName === "blackRookTwo") { toggleCastlingVariable("hasBlackRookTwoBeenMoved") }
+                        if(pieceName === "blackKing" && !castlingVariables.hasBlackKingBeenMoved) { toggleCastlingVariable("hasBlackKingBeenMoved") }
+                        if(pieceName === "blackRookOne" && !castlingVariables.hasBlackRookOneBeenMoved) { toggleCastlingVariable("hasBlackRookOneBeenMoved") }
+                        if(pieceName === "blackRookTwo" && !castlingVariables.hasBlackRookTwoBeenMoved) { toggleCastlingVariable("hasBlackRookTwoBeenMoved") }
 
-                        changePieceLocation(validMove, tile)
+                        const animationAngles = calculateAnimations(lastClickedSquare, tile)
+
+                        setTileToBeAnimated(lastClickedSquare)
+                        setAnimations(animationAngles)
+
+                        setTimeout(() => {
+                            setTileToBeAnimated(null)
+                            changePieceLocation(validMove, tile)
+                        }, 150)
+
                         // This represents a capture
                         if (whitePiecePositions.includes(tile)) {
                             const whitePiece = getPiecenameByLocation(tile, whitePieces)
@@ -293,57 +319,27 @@ function Board() {
                     player={"black"}
                 />
                 <div className="w-[700px] h-[700px] bg-gray-400 grid grid-cols-8 grid-rows-8 border-[4px] border-gray-700">
-                    {allBoardSquares.map((tile, index) => {
-
-                        // 
-                        const isBlack = Math.floor(index / 8) % 2 === index % 2;
-                        const matchingPieceWhite = Object.entries(whitePieces).find(([key, value]) => value === tile);
-                        const matchingPieceBlack = Object.entries(blackPieces).find(([key, value]) => value === tile);
-
-                        // ${lastClickedSquare === tile && "selectedSquare"} 
-                        // ${whatWhiteSees.includes(tile) && "selectedSquare"}
-                        return (
-                            <div
-                                key={tile}
-                                className={`col-span-1 row-span-1 cursor-pointer
-                            ${isBlack ? "bg-[#B98763]" : "bg-[#ECD6B1]"}
-                            ${lastClickedSquare === tile && whitesTurn && matchingPieceWhite && "selectedSquare"}
-                            ${lastClickedSquare === tile && !whitesTurn && matchingPieceBlack && "selectedSquare"}
-                            ${whatWhiteSees.includes(tile) && whitesTurn && "selectedSquare"}
-                            ${whatBlackSees.includes(tile) && !whitesTurn && "selectedSquare"}
-                            ${legalMovesForSelectedPiece.includes(tile) && "bg-gray-400"}
-                            ${isWhiteKingInCheck && matchingPieceWhite && matchingPieceWhite[0].includes("King") && "bg-red-400"} 
-                            ${isBlackKingInCheck && matchingPieceBlack && matchingPieceBlack[0].includes("King") && "bg-red-400"} 
-                            `
-                                }
-
-                                // When part of the board is clicked, find out if that square has a piece on it
-                                onClick={() => {
-                                    clickPartOfTheBoard(
-                                        tile,
-                                        matchingPieceWhite ? matchingPieceWhite[0] : false,
-                                        matchingPieceBlack ? matchingPieceBlack[0] : false
-                                    );
-                                }}
-
-                            >
-                                <div className="fixed mt-[70px] text-xs text-gray-700">
-                                    {tile}
-                                </div>
-                                <div className="w-full h-full p-1 relative">
-                                    {matchingPieceWhite && (
-                                        <img alt="chess piece"
-                                            className={`w-full h-full z-50`}
-                                            src={`/${variableNamesToURLPath[matchingPieceWhite[0]]}`}
-                                        />
-                                    )}
-                                    {matchingPieceBlack && (
-                                        <img alt="chess piece" className="w-full h-full z-50" src={`/${variableNamesToURLPath[matchingPieceBlack[0]]}`} />
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
+                    {allBoardSquares.map((tile, index) => (
+                        <Pieces
+                            key={index}
+                            index={index}
+                            tile={tile}
+                            lastClickedSquare={lastClickedSquare}
+                            whitesTurn={whitesTurn}
+                            whitePieces={whitePieces}
+                            blackPieces={blackPieces}
+                            whatWhiteSees={whatWhiteSees}
+                            whatBlackSees={whatBlackSees}
+                            legalMovesForSelectedPiece={legalMovesForSelectedPiece}
+                            isWhiteKingInCheck={isWhiteKingInCheck}
+                            isBlackKingInCheck={isBlackKingInCheck}
+                            showLayeredAttacks={showLayeredAttacks}
+                            whatPlayerSeeWithDuplicates={whatPlayerSeeWithDuplicates}
+                            clickPartOfTheBoard={clickPartOfTheBoard}
+                            animations={animations}
+                            tileToBeAnimated={tileToBeAnimated}
+                        />
+                    ))}
                 </div>
                 <CapturedPieces
                     pieces={blackPieces}
@@ -354,6 +350,8 @@ function Board() {
                 whatWhiteSees={whatWhiteSees}
                 whatBlackSees={whatBlackSees}
                 whitesTurn={whitesTurn}
+                showLayeredAttacks={showLayeredAttacks}
+                setShowLayeredAttacks={setShowLayeredAttacks}
             />
         </div>
     )
