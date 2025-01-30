@@ -77,6 +77,25 @@ export const variableNamesToPieceType = {
     "blackKing": "king"
 }
 
+export const blackPiecesIndexToPieceName = [
+    "blackPawnOne",
+    "blackPawnTwo",
+    "blackPawnThree",
+    "blackPawnFour",
+    "blackPawnFive",
+    "blackPawnSix",
+    "blackPawnSeven",
+    "blackPawnEight",
+    "blackRookOne",
+    "blackRookTwo",
+    "blackKnightOne",
+    "blackKnightTwo",
+    "blackBishopOne",
+    "blackBishopTwo",
+    "blackQueen",
+    "blackKing"
+]
+
 export const fullBoardWithNegativesForDepth = {
     files: [""]
 }

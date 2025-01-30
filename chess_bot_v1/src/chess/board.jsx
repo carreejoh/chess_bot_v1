@@ -4,6 +4,8 @@ import { whereCanThatPieceMove, movePiece, whatCanAllPiecesSee, isEitherKingInCh
 import { variableNamesToURLPath } from "./referenceObjects";
 import { calculateAnimations } from "./calculateAnimations";
 
+import { botOne } from "./bots/firstBot";
+
 import Controls from "./secondary/controls";
 import CapturedPieces from "./secondary/capturedPieces";
 import Stats from "./secondary/stats";
@@ -73,6 +75,21 @@ function Board() {
         if(whitesTurn) { setWhatPlayerCanSeeWithDuplicates(attacks.unFilteredWhiteMoves) }
         if(!whitesTurn) { setWhatPlayerCanSeeWithDuplicates(attacks.unFilteredBlackMoves) }
     }, [whitePieces, blackPieces])
+
+    // This runs the first bot so the player is always white.
+
+    useEffect(() => {
+        if(!whitesTurn) {
+            const move = botOne(whitePieces, blackPieces, castlingVariables)
+            // setLastClickedSquare(move.pieceLocation)
+            // console.log(move)
+            // clickPartOfTheBoard(move.pieceLocation, false, move.pieceName)
+            // setTimeout(() => {
+            //     clickPartOfTheBoard(move.move, false, false)
+            // }, 1000)
+            // changePieceLocation(move.pieceName, move.move)
+        }
+    }, [whitesTurn])
 
     // 
     // Change the white or black useState holding locations
@@ -146,6 +163,8 @@ function Board() {
         }));
     };
 
+    console.log(lastClickedSquare)
+
     // 
     // This searches each object by key, and finds what the piece variable name is
     // 
@@ -165,6 +184,10 @@ function Board() {
 
         const whitePiecePositions = Object.values(whitePieces);
         const blackPiecePositions = Object.values(blackPieces);
+
+        console.log(tile)
+        console.log(matchingPieceWhite)
+        console.log(matchingPieceBlack)
 
         let locations = []
 
@@ -240,14 +263,13 @@ function Board() {
                 locations = whereCanThatPieceMove(tile, matchingPieceBlack, whitePieces, blackPieces, castlingVariables)
             }
             setLegalMovesForSelectedPiece(locations)
-
             // Random clicks
             if (!blackPiecePositions.includes(lastClickedSquare) && !blackPiecePositions.includes(tile)) {
                 setLegalMovesForSelectedPiece([])
             }
-
             // /a piece to empty space or capture
             if (blackPiecePositions.includes(lastClickedSquare) && !blackPiecePositions.includes(tile)) {
+                console.log("blacks turn")
                 let validMove = movePiece(lastClickedSquare, tile, whitePieces, blackPieces, blackPieces, castlingVariables)
                 if (validMove) {
                     let isKingInCheck = isEitherKingInCheck(whitePieces, blackPieces, validMove, tile, "black", isWhiteKingInCheck, isBlackKingInCheck, castlingVariables)
@@ -300,19 +322,6 @@ function Board() {
 
     return (
         <div className="flex">
-            {/* <div className="flex">
-                <button onClick={() => { setWhitePieces(initialWhitePieces); setBlackPieces(initialBlackPieces) }}>
-                    Reset
-                </button>
-                <h2 className="ml-4">Turn: </h2>
-                {whitesTurn ? (
-                    <div className="h-4 w-4 bg-white">
-                    </div>
-                ) : (
-                    <div className="h-4 w-4 bg-black">
-                    </div>
-                )}
-            </div> */}
             <div>
                 <CapturedPieces
                     pieces={whitePieces}

@@ -19,8 +19,8 @@ export const calculateAnimations = (startingTile, endingTile) => {
     const startCenter = getTileCenter(startingTile);
     const endCenter = getTileCenter(endingTile);
 
-    console.log("Starting Tile Center:", startCenter);
-    console.log("Ending Tile Center:", endCenter);
+    // console.log("Starting Tile Center:", startCenter);
+    // console.log("Ending Tile Center:", endCenter);
 
     // Calculate the distance between the two centers
     const dx = endCenter.x - startCenter.x;
@@ -30,8 +30,8 @@ export const calculateAnimations = (startingTile, endingTile) => {
     // Calculate the angle between the two centers
     const angle = Math.atan2(dy, dx) * (180 / Math.PI); // Convert radians to degrees
 
-    console.log("Distance:", distance);
-    console.log("Angle:", angle);
+    // console.log("Distance:", distance);
+    // console.log("Angle:", angle);
 
     return { distance, angle, endCenter, dx, dy };
 };
