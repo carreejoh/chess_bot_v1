@@ -28,7 +28,7 @@ export const pawnMoves = (tile, whitePieces, blackPieces) => {
             !blackPiecePositions.includes(`${file}${rank + 2}`) &&
             !whitePiecePositions.includes(`${file}${rank + 1}`) &&
             !blackPiecePositions.includes(`${file}${rank + 1}`) &&
-            rank == 2
+            rank === 2
         ) {
             moves.push(`${file}${rank + 2}`)
         }
@@ -44,7 +44,7 @@ export const pawnMoves = (tile, whitePieces, blackPieces) => {
     if (blackPiecePositions.includes(tile)) {
 
         // Can the pawn move down one spot
-        if (!blackPiecePositions.includes(`${file}${rank - 1}`) && !blackPiecePositions.includes(`${file}${rank - 1}`)) {
+        if (!blackPiecePositions.includes(`${file}${rank - 1}`) && !whitePiecePositions.includes(`${file}${rank - 1}`)) {
             moves.push(`${file}${rank - 1}`)
         }
 
@@ -54,7 +54,7 @@ export const pawnMoves = (tile, whitePieces, blackPieces) => {
             !blackPiecePositions.includes(`${file}${rank - 2}`) &&
             !whitePiecePositions.includes(`${file}${rank - 1}`) &&
             !blackPiecePositions.includes(`${file}${rank - 1}`) &&
-            rank == 7
+            rank === 7
         ) {
             moves.push(`${file}${rank - 2}`)
         }

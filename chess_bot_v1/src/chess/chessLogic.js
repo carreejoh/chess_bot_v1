@@ -1,13 +1,10 @@
 import { variableNamesToPieceType } from "./referenceObjects";
-import {
-    knightMoves,
-    bishopMoves,
-    rookMoves,
-    queenMoves,
-    kingMoves,
-} from "./legalMoves";
-
-import { pawnMoves, whatCanPawnsAttack } from "./legalMoves/pawnMoves";
+import { pawnMoves, whatCanPawnsAttack } from "./legalMoves/pieceMovements/pawnMoves";
+import { knightMoves } from "./legalMoves/pieceMovements/knightMoves";
+import { bishopMoves } from "./legalMoves/pieceMovements/bishopMoves";
+import { rookMoves } from "./legalMoves/pieceMovements/rookMoves";
+import { queenMoves } from "./legalMoves/pieceMovements/queenMoves";
+import { kingMoves } from "./legalMoves/pieceMovements/kingMoves";
 
 //
 // Return an array of locations where this piece can legally move.
@@ -234,7 +231,7 @@ export const isEitherKingInCheck = (
             tempBlack[piece] = proposedMove;
             break;
         default:
-            console.log(`${piece} is not a recognized white piece.`);
+            console.log(`${piece} is not a recognized piece.`);
     }
 
     // Combine the seperated objects for all piece locations including proposed move
