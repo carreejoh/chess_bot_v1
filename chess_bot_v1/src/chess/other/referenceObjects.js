@@ -96,6 +96,10 @@ export const blackPiecesIndexToPieceName = [
     "blackKing"
 ]
 
-export const fullBoardWithNegativesForDepth = {
-    files: [""]
+export const pieceTypeToValue = {
+    "pawn": 1,
+    "knight": 3,
+    "bishop": 3.2,
+    "rook": 5,
+    "queen": 9
 }

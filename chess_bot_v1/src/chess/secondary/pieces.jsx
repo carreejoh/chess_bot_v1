@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { variableNamesToURLPath } from "../referenceObjects";
+import { variableNamesToURLPath } from "../other/referenceObjects";
 
 function Pieces({
     tile,

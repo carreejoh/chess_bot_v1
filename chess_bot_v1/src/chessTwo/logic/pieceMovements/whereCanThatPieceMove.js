@@ -1,5 +1,5 @@
 
-import { variableNamesToPieceType } from "../../other/referenceObjects";
+import { variableNamesToPieceType } from "../../objects/referenceObjects"
 import { pawnMoves } from "../pieceMovements/pawnMoves";
 import { knightMoves } from "../pieceMovements/knightMoves";
 import { bishopMoves } from "../pieceMovements/bishopMoves";

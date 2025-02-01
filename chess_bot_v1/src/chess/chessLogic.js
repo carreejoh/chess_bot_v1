@@ -1,4 +1,4 @@
-import { variableNamesToPieceType } from "./referenceObjects";
+import { variableNamesToPieceType } from "./other/referenceObjects";
 import { pawnMoves, whatCanPawnsAttack } from "./legalMoves/pieceMovements/pawnMoves";
 import { knightMoves } from "./legalMoves/pieceMovements/knightMoves";
 import { bishopMoves } from "./legalMoves/pieceMovements/bishopMoves";

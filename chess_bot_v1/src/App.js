@@ -1,6 +1,6 @@
 
 import Board from "./chess/board";
-import Main from "./chessTwo/main"
+import Main from "./chess/main";
 
 function App() {
   return (

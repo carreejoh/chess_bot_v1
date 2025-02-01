@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import { initialWhitePieces, initialBlackPieces } from "./chessLocations";
+import { initialWhitePieces, initialBlackPieces } from "./other/chessLocations";
 import { whereCanThatPieceMove, movePiece, whatCanAllPiecesSee, isEitherKingInCheck } from "./chessLogic";
-import { variableNamesToURLPath } from "./referenceObjects";
-import { calculateAnimations } from "./calculateAnimations";
+import { variableNamesToURLPath } from "./other/referenceObjects";
+import { calculateAnimations } from "./other/calculateAnimations";
 import { allPieceLegalMoves } from "./legalMoves/logic/allAvailableMoves";
 
 import { botOne } from "./bots/firstBot";
@@ -200,11 +200,6 @@ function Board() {
     // Random Click
 
     function clickPartOfTheBoard(tile, matchingPieceWhite, matchingPieceBlack) {
-
-        console.log(tile)
-        console.log(lastClickedSquare)
-        console.log(matchingPieceWhite)
-        console.log(matchingPieceBlack)
 
         const whitePiecePositions = Object.values(whitePieces);
         const blackPiecePositions = Object.values(blackPieces);

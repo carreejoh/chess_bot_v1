@@ -1,9 +1,7 @@
-import { variableNamesToPieceType, blackPiecesIndexToPieceName } from "../referenceObjects"
-import { whereCanThatPieceMove, whatCanAllPiecesSee } from "../chessLogic"
 
-import { allPieceLegalMoves } from "../legalMoves/logic/allAvailableMoves"
-
-// import {}
+import { allPieceLegalMoves } from "../logic/allAvailableMoves"
+import { pieceTypeToValue, variableNamesToPieceType } from "../other/referenceObjects"
+import { whatCanAllPiecesSee } from "../logic/whatCanAllPiecesSee"
 
 // What will this bot need to be able to choose/play a move?
 
@@ -19,67 +17,128 @@ import { allPieceLegalMoves } from "../legalMoves/logic/allAvailableMoves"
 export const botOne = (
     whitePieces,
     blackPieces,
-    isWhiteKingInCheck,
-    isBlackKingInCheck,
     castlingVariables
 ) => {
 
-    const allLegalMoves = allPieceLegalMoves(whitePieces, blackPieces, "black", isWhiteKingInCheck, isBlackKingInCheck, castlingVariables)
+    // Piece locations
+    const whitePieceLocations = Object.values(whitePieces);
+    const blackPieceLocations = Object.values(blackPieces);
 
+    // Get all legal moves for both players
+    const allLegalMoves = allPieceLegalMoves(whitePieces, blackPieces, castlingVariables)
+    console.log(allLegalMoves)
+
+    let bestInDanger = null
+    let bestInDangerLocation = null
+    let bestInDangerValue = 0
+
+    let bestToAttack = null
+    let bestToAttackLocation = null
+    let bestToAttackValue = 0
+
+    const getPiecenameByLocation = (obj, value) => {
+        return Object.entries(obj).find(([key, val]) => val === value)?.[0] || null;
+    };
+
+    // DEFENSE
+    // What pieces are being targeted by white?
+    let threatened = blackPieceLocations.filter(location =>
+        allLegalMoves.combinedLegalMoveArrayWhite.includes(location)
+    );
+
+    // Get each piece being targeted by white
+    const threatenedPieceNames = threatened.map((target) => 
+        getPiecenameByLocation(blackPieces, target) 
+    );
+
+    // Loop through all threatened pieces and determine most valuable piece
+    if(threatenedPieceNames.length > 0) {
+        threatenedPieceNames.forEach((piece) => {
+            let name = variableNamesToPieceType[piece]
+            let value = pieceTypeToValue[name]
+            if(value > bestInDangerValue) {
+                bestInDanger = piece
+                bestInDangerLocation = blackPieces[piece]
+                bestInDangerValue = value
+            }
+        })
+    }
+
+    // What pieces can black attack?
+    let canAttack = whitePieceLocations.filter(location =>
+        allLegalMoves.combinedLegalMoveArrayBlack.includes(location)
+    );
+
+    // Get each piece being targeted by white
+    const canAttackPieces = canAttack.map((target) => 
+        getPiecenameByLocation(whitePieces, target) 
+    );
+
+    // Loop through all pieces black can attack and determine most valuable
+    if(canAttackPieces.length > 0) {
+        canAttackPieces.forEach((piece) => {
+            let name = variableNamesToPieceType[piece]
+            let value = pieceTypeToValue[name]
+            if(value > bestToAttackValue) {
+                bestToAttack = piece
+                bestToAttackLocation = whitePieces[piece]
+                bestToAttackValue = value
+            }
+        })
+    }
+  
     let originalTile;
-    let pieceName; 
+    let pieceName;
     let moveToTile;
 
+    console.log(bestInDangerValue)
+    console.log(bestToAttackValue)
+
+    console.log(bestInDanger)
+    console.log(bestToAttackLocation)
+
+    if(bestInDangerValue > bestToAttackValue) {
+        let allSafeMoves = allLegalMoves.blackPiecesObject[bestInDanger].filter(move => 
+            !allLegalMoves.combinedLegalMoveArrayWhite.includes(move)
+        )
+        // If cant defend piece, try attack
+        if(allSafeMoves.length === 0) {
+            bestInDangerValue = 0
+            return
+        } else {
+            const randomMove = allSafeMoves[Math.floor(Math.random() * allSafeMoves.length)];
+            moveToTile = randomMove
+            pieceName = bestInDanger
+            originalTile = whitePieces[pieceName]
+        } 
+    }
+
+    if(bestToAttackValue > bestInDangerValue) {
+        Object.entries(allLegalMoves.blackPiecesObject).forEach(([key, value]) => {
+            if (value.includes(bestToAttackLocation)) {
+                originalTile = blackPieces[key];
+                pieceName = key;
+                moveToTile = bestToAttackLocation;
+            }
+        });
+    }
+    
+
+    // GARBAGE
+
     Object.entries(allLegalMoves.blackPiecesObject).forEach(([key, value]) => {
-        if(value.length > 0) {
-            moveToTile = value[0]
-            pieceName = key
-        }
+        // RANDOM
+        // if(value.length > 0) {
+        //     moveToTile = value[0]
+        //     pieceName = key
+        // }
     })
 
     originalTile = blackPieces[pieceName]
 
-    return { 
+    return {
         moveToTile,
         originalTile,
         pieceName
-     }
-
-    // let allLegalMoves = []
-    // let allLegalAttacks = []
-    // let allPiecesThatCanMove = []
-
-    // // Get all legal piece moves (not including attacks)
-    // Object.entries(blackPieces).forEach(([key, value]) => {
-    //     let legalMoves = whereCanThatPieceMove(value, key, whitePieces, blackPieces, castlingVariables)
-    //     allLegalMoves.push(legalMoves)
-    // })
-
-    // // What pieces even can move?
-    // allLegalMoves.forEach((piece, index) => {
-    //     if(piece.length > 0) {
-    //         allPiecesThatCanMove.push(piece)
-    //     }
-    // })
-
-    // // Pick a random piece that can move
-    // let randomPiece = Math.floor(Math.random() * allPiecesThatCanMove.length) ;
-    // console.log(randomPiece)
-    // // Get the legal moves for that piece, as well as the name
-    // let randomPieceAvailableMoves = allLegalMoves[randomPiece]
-    // let pieceName = blackPiecesIndexToPieceName[randomPiece]
-    // let pieceLocation = blackPieces[pieceName]
-    // // Select a random move
-    // let randomMove = Math.floor(Math.random() * randomPieceAvailableMoves.length) ;
-
-    // Returned as lastClickedSquare, newSquare, piecename
-    // return { 
-    //     pieceLocation: pieceLocation, 
-    //     move: randomPieceAvailableMoves[randomMove], 
-    //     pieceName: pieceName
-    // }
-}
-
-function allLegalMovesWithBlackPieces(tile, piece, whitePieces, blackPieces, castlingVariables) {
-
+    }
 }

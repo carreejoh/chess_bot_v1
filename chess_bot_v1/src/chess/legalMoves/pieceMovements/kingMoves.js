@@ -59,7 +59,7 @@ export const kingMoves = (
     if(
         whitePiecePositions.includes(tile) && 
         !castlingVariables.hasWhiteKingBeenMoved && 
-        !castlingVariables.hasWhiteRookOneBeenMoved && 
+        !castlingVariables.hasWhiteRookTwoBeenMoved && 
         !whitePiecePositions.includes("f1") && 
         !whitePiecePositions.includes("g1")
     ) {
@@ -68,7 +68,7 @@ export const kingMoves = (
     if(
         whitePiecePositions.includes(tile) && 
         !castlingVariables.hasWhiteKingBeenMoved && 
-        !castlingVariables.hasWhiteRookTwoBeenMoved && 
+        !castlingVariables.hasWhiteRookOneBeenMoved && 
         !whitePiecePositions.includes("b1") && 
         !whitePiecePositions.includes("c1") && 
         !whitePiecePositions.includes("d1")
@@ -81,7 +81,7 @@ export const kingMoves = (
     if(
         blackPiecePositions.includes(tile) && 
         !castlingVariables.hasBlackKingBeenMoved && 
-        !castlingVariables.hasBlackRookOneBeenMoved && 
+        !castlingVariables.hasBlackRookTwoBeenMoved && 
         !blackPiecePositions.includes("f8") && 
         !blackPiecePositions.includes("g8")
     ) {
@@ -90,7 +90,7 @@ export const kingMoves = (
     if(
         blackPiecePositions.includes(tile) && 
         !castlingVariables.hasBlackKingBeenMoved && 
-        !castlingVariables.hasBlackRookTwoBeenMoved && 
+        !castlingVariables.hasBlackRookOneBeenMoved && 
         !blackPiecePositions.includes("b8") && 
         !blackPiecePositions.includes("c8") && 
         !blackPiecePositions.includes("d8")

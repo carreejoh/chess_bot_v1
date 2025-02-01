@@ -1,4 +1,4 @@
-import { variableNamesToURLPath } from "../referenceObjects"
+import { variableNamesToURLPath } from "../other/referenceObjects"
 
 function CapturedPieces({
     pieces,
