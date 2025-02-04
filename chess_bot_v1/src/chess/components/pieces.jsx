@@ -13,7 +13,9 @@ function Pieces({
     animations,
     tileToBeAnimated,
 
-    attacks
+    attacks,
+    isWhiteKingInCheck, 
+    isBlackKingInCheck
 }) {
 
     const isBlack = Math.floor(index / 8) % 2 === index % 2;
@@ -49,12 +51,12 @@ function Pieces({
     }, [attacks, tile])
 
     const getTileClass = () => {
-        // if (isWhiteKingInCheck && matchingPieceWhite?.[0]?.includes("King")) {
-        //   return "bg-red-400"; // Highest priority: White King in check
-        // }
-        // if (isBlackKingInCheck && matchingPieceBlack?.[0]?.includes("King")) {
-        //   return "bg-red-400"; // Highest priority: Black King in check
-        // }
+        if (isWhiteKingInCheck && matchingPieceWhite?.[0]?.includes("King")) {
+          return "bg-red-400"; // Highest priority: White King in check
+        }
+        if (isBlackKingInCheck && matchingPieceBlack?.[0]?.includes("King")) {
+          return "bg-red-400"; // Highest priority: Black King in check
+        }
         // if (legalMovesForSelectedPiece.includes(tile)) {
         //   return "bg-gray-400"; // Second priority: Legal move
         // }

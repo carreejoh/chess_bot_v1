@@ -19,21 +19,32 @@ function Board({
 
     whitesTurn
 }) {
+    // Store all legal moves for UI purposes
+    const [allLegalMoves, setAllLegalMoves] = useState(null)
 
     // Shows attacks that current player has.
     // "off", "one", "multiple"
     const [showAttacks, setShowAttacks] = useState("one")
     const [attacks, setAttacks] = useState([])
 
-    // This shows what squares are under the control of each player
+    // Is either king in check
+    const [isWhiteKingInCheck, setIsWhiteKingInCheck] = useState(false)
+    const [isBlackKingInCheck, setIsBlackKingInCheck] = useState(false)
+
+    // Find and set all legal moves state
     useEffect(() => {
+        const legalMoves = allPieceLegalMoves(whitePieces, blackPieces, castlingVariables)
+        setAllLegalMoves(legalMoves)
+    }, [whitePieces, blackPieces, castlingVariables])
+
+    // This shows all legal moves including attacks 
+    useEffect(() => {
+        if(!allLegalMoves) return
+
         // attacks is turned off
         if (showAttacks === "off") {
             setAttacks([])
-            return
         }
-
-        const allLegalMoves = allPieceLegalMoves(whitePieces, blackPieces, castlingVariables)
         if (whitesTurn && showAttacks === "one") {
             const noDups = [...new Set(allLegalMoves.combinedLegalMoveArrayWhite)];
             setAttacks(noDups)
@@ -48,7 +59,26 @@ function Board({
         if (!whitesTurn && showAttacks === "multiple") {
             setAttacks(allLegalMoves.combinedLegalMoveArrayBlack)
         }
-    }, [whitePieces, blackPieces, castlingVariables, whitesTurn, showAttacks])
+    }, [showAttacks, allLegalMoves, whitesTurn])
+
+    // Check to see if either king is in check for UI
+    useEffect(() => {
+        if(!allLegalMoves) return
+
+        if(allLegalMoves.combinedLegalMoveArrayWhite.includes(blackPieces.blackKing)) {
+            setIsBlackKingInCheck(true)
+        } 
+        if(!allLegalMoves.combinedLegalMoveArrayWhite.includes(blackPieces.blackKing)) {
+            setIsBlackKingInCheck(false)
+        }
+        if(allLegalMoves.combinedLegalMoveArrayBlack.includes(whitePieces.whiteKing)) {
+            setIsWhiteKingInCheck(true)
+        } 
+        if(!allLegalMoves.combinedLegalMoveArrayBlack.includes(whitePieces.whiteKing)) {
+            setIsWhiteKingInCheck(false)
+        }  
+
+    }, [allLegalMoves])
 
     // This logic builds the board 
     const allBoardSquares = [];
@@ -83,6 +113,8 @@ function Board({
                             tileToBeAnimated={tileToBeAnimated}
 
                             attacks={attacks}
+                            isWhiteKingInCheck={isWhiteKingInCheck}
+                            isBlackKingInCheck={isBlackKingInCheck}
                         />
                     ))}
                 </div>

@@ -62,7 +62,7 @@ export const rebuildCastlingVariables = (
         castleVariablesClone["hasBlackKingBeenMoved"] = true
         castleVariablesClone["hasBlackRookOneBeenMoved"] = true
         blackPiecesClone["blackKing"] = "c8"
-        blackPiecesClone["blackRookTwo"] = "d8"
+        blackPiecesClone["blackRookOne"] = "d8"
     }
     if(moveToTile === "g8") {
         castleVariablesClone["hasBlackKingBeenMoved"] = true
