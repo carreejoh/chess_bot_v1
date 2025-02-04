@@ -11,7 +11,9 @@ function Pieces({
     handleBoardClick,
 
     animations,
-    tileToBeAnimated
+    tileToBeAnimated,
+
+    attacks
 }) {
 
     const isBlack = Math.floor(index / 8) % 2 === index % 2;
@@ -21,6 +23,7 @@ function Pieces({
         x: 0,
         y: 0
     })
+    const [count, setCount] = useState(0)
 
     useEffect(() => {
         if(tileToBeAnimated === tile) {
@@ -32,6 +35,18 @@ function Pieces({
             })
         }
     }, [tileToBeAnimated])
+
+    // This counts how many times the tile is in the attacks array
+    useEffect(() => {
+        if(attacks.length === 0 ) return
+        let tempCount = 0
+        for (let i = 0; i < attacks.length; i++) {
+            if (attacks[i] === tile) {
+                tempCount++
+            }
+        }
+        setCount(tempCount)
+    }, [attacks, tile])
 
     const getTileClass = () => {
         // if (isWhiteKingInCheck && matchingPieceWhite?.[0]?.includes("King")) {
@@ -49,11 +64,9 @@ function Pieces({
         // if (!showLayeredAttacks && whatBlackSees.includes(tile) && !whitesTurn) {
         //   return "whatPlayerSeesOne"; // Third priority: Black sees attack (when not layered)
         // }
-        // if (showLayeredAttacks) {
-        //   if (count === 1) return "whatPlayerSeesOne";
-        //   if (count === 2) return "whatPlayerSeesTwo";
-        //   if (count > 2) return "whatPlayerSeesThree";
-        // }
+          if (count === 1) return "whatPlayerSeesOne";
+          if (count === 2) return "whatPlayerSeesTwo";
+          if (count > 2) return "whatPlayerSeesThree";
         return "";
     };
 

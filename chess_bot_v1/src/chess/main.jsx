@@ -36,18 +36,18 @@ function Main() {
         hasBlackRookTwoBeenMoved: false
     })
 
-    // Bot implementation
-    useEffect(() => {
-        if (!whitesTurn) {
-            setTileToBeAnimated(null);
-            setAnimations({});
-            setTimeout(() => {
-                let bot = botOne(whitePieces, blackPieces, castlingVariables)
-                console.log(bot)
-                verifyAndMovePiece(bot.moveToTile, bot.originalTile)
-            }, 200)
-        }
-    }, [whitesTurn])
+    // // Bot implementation
+    // useEffect(() => {
+    //     if (!whitesTurn) {
+    //         setTileToBeAnimated(null);
+    //         setAnimations({});
+    //         setTimeout(() => {
+    //             let bot = botOne(whitePieces, blackPieces, castlingVariables)
+    //             console.log(bot)
+    //             verifyAndMovePiece(bot.moveToTile, bot.originalTile)
+    //         }, 200)
+    //     }
+    // }, [whitesTurn])
 
     // This calculates the animations for the piece to be moved
     const handleAnimations = (tile, currentTile) => {
@@ -147,7 +147,6 @@ function Main() {
 
         // Black player is trying to move piece
         if (!whitesTurn && blackPieceLocations.includes(lastClickedSquare) && !blackPieceLocations.includes(tile)) {
-            console.log("blacks turn and trying to move a piece")
             verifyAndMovePiece(tile, lastClickedSquare)
         }
 
@@ -161,11 +160,14 @@ function Main() {
         <Board
             whitePieces={whitePieces}
             blackPieces={blackPieces}
+            castlingVariables={castlingVariables}
 
             handleBoardClick={handleBoardClick}
 
             animations={animations}
             tileToBeAnimated={tileToBeAnimated}
+
+            whitesTurn={whitesTurn}
         />
     )
 }

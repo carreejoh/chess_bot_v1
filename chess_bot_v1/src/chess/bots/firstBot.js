@@ -26,7 +26,6 @@ export const botOne = (
 
     // Get all legal moves for both players
     const allLegalMoves = allPieceLegalMoves(whitePieces, blackPieces, castlingVariables)
-    console.log(allLegalMoves)
 
     let bestInDanger = null
     let bestInDangerLocation = null
