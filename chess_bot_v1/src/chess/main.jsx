@@ -132,6 +132,8 @@ function Main() {
         }
     }
 
+    // Test
+
     // Simple logic to determine what the player was trying to do
     // if they click the board
     const handleBoardClick = (tile) => {
